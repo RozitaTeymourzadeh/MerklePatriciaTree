@@ -1,2 +1,1 @@
-# MerklePatriciaTree
-Ethereum uses a Merkle Patricia Tree.
+# cs686_blockchain_P1_Go_skeleton

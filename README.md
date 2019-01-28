@@ -3,30 +3,30 @@
 
 # Build a Merkle Patricia Tree
 
-Project 1: Build a Merkle Patricia Tree
+## Project 1: Build a Merkle Patricia Tree
 
 Ethereum uses a Merkle Patricia Tree (Links to an external site.)Links to an external site. to store the transaction data in a block. By organizing the transaction data in a Merkle Patricia Tree, any block with fraudulent transactions would not match the tree's root hash. Build your own implementation of a Merkle Patricia Trie, following the specifications at the Ethereum wiki. (Links to an external site.)Links to an external site. Be mindful that you will use this code in the subsequent projects. 
 
 Starter Code:
 
-Rust: [Rust](https://github.com/CharlesGe129/cs686_blockchain_P1_Rust_skeleton.git) (Links to an external site.)Links to an external site.
+Rust: [Rust](https://github.com/CharlesGe129/cs686_blockchain_P1_Rust_skeleton.git) 
 
-Go: [Go](https://github.com/CharlesGe129/cs686_blockchain_P1_Go_skeleton.git) (Links to an external site.)Links to an external site.
+Go: [Go](https://github.com/CharlesGe129/cs686_blockchain_P1_Go_skeleton.git) 
  
 
 Helpful resources:
 
 Rust: 
 
-[Rust1](https://doc.rust-lang.org/rust-by-example/index.html) (Links to an external site.)Links to an external site.
+[Rust1](https://doc.rust-lang.org/rust-by-example/index.html) 
 
-[Rust2](https://doc.rust-lang.org/std/vec/?search=) (Links to an external site.)Links to an external site.
+[Rust2](https://doc.rust-lang.org/std/vec/?search=) 
 
 Go:
 
-[Go1](https://tour.golang.org/welcome/1) (Links to an external site.)Links to an external site.
+[Go1](https://tour.golang.org/welcome/1) 
 
-[Go2](https://golang.org/pkg/strings/#HasPrefix) (Links to an external site.)Links to an external site.
+[Go2](https://golang.org/pkg/strings/#HasPrefix) 
 
  
 

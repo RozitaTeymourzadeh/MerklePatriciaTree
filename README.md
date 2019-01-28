@@ -18,15 +18,15 @@ Helpful resources:
 
 Rust: 
 
-https://doc.rust-lang.org/rust-by-example/index.html (Links to an external site.)Links to an external site.
+[Rust1](https://doc.rust-lang.org/rust-by-example/index.html) (Links to an external site.)Links to an external site.
 
-https://doc.rust-lang.org/std/vec/?search= (Links to an external site.)Links to an external site.
+[Rust2](https://doc.rust-lang.org/std/vec/?search=) (Links to an external site.)Links to an external site.
 
 Go:
 
-https://tour.golang.org/welcome/1 (Links to an external site.)Links to an external site.
+[Go1](https://tour.golang.org/welcome/1) (Links to an external site.)Links to an external site.
 
-https://golang.org/pkg/strings/#HasPrefix (Links to an external site.)Links to an external site.
+[Go2](https://golang.org/pkg/strings/#HasPrefix) (Links to an external site.)Links to an external site.
 
  
 
@@ -79,25 +79,25 @@ If you use Golang, please follow this link to install the SHA3-256 package: http
 
 If you use Rust, the package dependency is written into Cargo.toml, so directly build and run the project should be fine. 
 
-Classes specification: 
+## Classes specification: 
 In this project, there are two pre-defined classes. Both classes are defined in skeleton code, feel free to implement any useful functions.
 
-2. enum Node
+1. enum Node
 This class represent a node of type Branch, Leaf, Extension, or Null.
 
-3. struct MerklePatriciaTrie
+2. struct MerklePatriciaTrie
 This class represent a Merkle Patricia Trie. It has two variables: "db" and "root".
 Variable "db" is a HashMap. The key of the HashMap is a Node's hash value. The value of the HashMap is the Node. 
 Variable "root" is a String, which is the hash value of the root node.
 
-Other requirements:
+## Other requirements:
 
 1. Leaf node and Extension node are differentiated by their prefix, not the enum type. The class "Node" is defined in skeleton code and do not change it!
 
 2. General code quality is required. Code smell would be commented for this project, and might affect your grade in the future projects. 
 
 
-Hints:
+## Hints:
 
 1. Think through all the cases of Get(), Insert(), and Delete() before implementing would save a lot of time. 
 2. If you use Rust, implement Clone() for both "Node" and "MerklePatriciaTrie" would be helpful.

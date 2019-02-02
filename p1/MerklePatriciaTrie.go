@@ -25,7 +25,7 @@ type MerklePatriciaTrie struct {
 
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
-	return ""
+	return "", errors.New("path_not_found")
 }
 
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
@@ -34,6 +34,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 
 func (mpt *MerklePatriciaTrie) Delete(key string) {
 	// TODO
+	errors.New("path_not_found")
 }
 
 func compact_encode(hex_array []uint8) []uint8 {
@@ -44,6 +45,7 @@ func compact_encode(hex_array []uint8) []uint8 {
 // If Leaf, ignore 16 at the end
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
+
 	return []uint8{}
 }
 
@@ -70,4 +72,7 @@ func (node *Node) hash_node() string {
 
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
+}
+int main(){
+	fmt.Println("Hello World!")
 }

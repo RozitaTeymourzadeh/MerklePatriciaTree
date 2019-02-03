@@ -2,39 +2,42 @@ package p1
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"golang.org/x/crypto/sha3"
 	"reflect"
+
+	"golang.org/x/crypto/sha3"
 )
 
 type Flag_value struct {
 	encoded_prefix []uint8
-	value string
+	value          string
 }
 
 type Node struct {
-	node_type int // 0: Null, 1: Branch, 2: Ext or Leaf
+	node_type    int // 0: Null, 1: Branch, 2: Ext or Leaf
 	branch_value [17]string
-	flag_value Flag_value
+	flag_value   Flag_value
 }
 
 type MerklePatriciaTrie struct {
-	db map[string]Node
+	db   map[string]Node
 	root string
 }
 
-func (mpt *MerklePatriciaTrie) Get(key string) string {
+func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
 	return "", errors.New("path_not_found")
 }
 
-func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+func (mpt *MerklePatriciaTrie) Delete(key string) error {
 	// TODO
+	return errors.New("path_not_found")
 }
 
-func (mpt *MerklePatriciaTrie) Delete(key string) {
+func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	// TODO
-	errors.New("path_not_found")
+
 }
 
 func compact_encode(hex_array []uint8) []uint8 {
@@ -73,6 +76,6 @@ func (node *Node) hash_node() string {
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
 }
-int main(){
+func main() {
 	fmt.Println("Hello World!")
 }

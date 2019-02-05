@@ -25,6 +25,16 @@ type MerklePatriciaTrie struct {
 	root string
 }
 
+func HexConverter(key string) []uint8 {
+		var hex_array []uint8
+
+		for i := 0 ; i < len(key); i ++ {
+			hex_array = append(hex_array, key[i]/16)
+			hex_array = append(hex_array, key[i]%16)
+		}
+		return hex_array
+	}
+
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
 	return "", errors.New("path_not_found")

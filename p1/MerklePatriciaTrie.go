@@ -41,8 +41,26 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 }
 
 func Compact_encode(hex_array []uint8) []uint8 {
-	// TODO
-	return []uint8{}
+	var term = 0
+	var result []uint8
+	if hex_array[len(hex_array)-1] == 16 {
+		term = 1
+	}
+	if term == 1 {
+		hex_array = hex_array[0 : len(hex_array)-1]
+	}
+	var oddlen = len(hex_array) % 2
+	var flags uint8 = uint8(2*term + oddlen)
+	if oddlen == 1 {
+		hex_array = append([]uint8{flags}, hex_array...)
+	} else {
+		hex_array = append([]uint8{0}, hex_array...)
+		hex_array = append([]uint8{flags}, hex_array...)
+	}
+	for i := 0; i < len(hex_array); i += 2 {
+		result = append(result, 16*hex_array[i]+hex_array[i+1])
+	}
+	return result
 }
 
 // If Leaf, ignore 16 at the end

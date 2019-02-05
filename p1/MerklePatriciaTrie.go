@@ -26,14 +26,14 @@ type MerklePatriciaTrie struct {
 }
 
 func HexConverter(key string) []uint8 {
-		var hex_array []uint8
+	var hex_array []uint8
 
-		for i := 0 ; i < len(key); i ++ {
-			hex_array = append(hex_array, key[i]/16)
-			hex_array = append(hex_array, key[i]%16)
-		}
-		return hex_array
+	for i := 0; i < len(key); i++ {
+		hex_array = append(hex_array, key[i]/16)
+		hex_array = append(hex_array, key[i]%16)
 	}
+	return hex_array
+}
 
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
@@ -75,9 +75,14 @@ func Compact_encode(hex_array []uint8) []uint8 {
 
 // If Leaf, ignore 16 at the end
 func Compact_decode(encoded_arr []uint8) []uint8 {
-	// TODO
 
-	return []uint8{}
+	var decoded_arr []uint8
+	for i := 0; i < len(encoded_arr); i += 1 {
+		decoded_arr = append(decoded_arr, encoded_arr[i]/16)
+		decoded_arr = append(decoded_arr, encoded_arr[i]%16)
+	}
+
+	return decoded_arr
 }
 
 func Test_compact_encode() {

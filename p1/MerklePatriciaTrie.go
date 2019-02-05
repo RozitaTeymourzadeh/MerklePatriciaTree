@@ -40,26 +40,26 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 
 }
 
-func compact_encode(hex_array []uint8) []uint8 {
+func Compact_encode(hex_array []uint8) []uint8 {
 	// TODO
 	return []uint8{}
 }
 
 // If Leaf, ignore 16 at the end
-func compact_decode(encoded_arr []uint8) []uint8 {
+func Compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
 
 	return []uint8{}
 }
 
-func test_compact_encode() {
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+func Test_compact_encode() {
+	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
+	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
 }
 
-func (node *Node) hash_node() string {
+func (node *Node) Hash_node() string {
 	var str string
 	switch node.node_type {
 	case 0:

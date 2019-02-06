@@ -81,7 +81,17 @@ func Compact_decode(encoded_arr []uint8) []uint8 {
 		decoded_arr = append(decoded_arr, encoded_arr[i]/16)
 		decoded_arr = append(decoded_arr, encoded_arr[i]%16)
 	}
-
+	
+	switch decoded_arr[0] {
+	case 0:
+		decoded_arr = decoded_arr[2:len(decoded_arr)]
+	case 1:
+		decoded_arr = decoded_arr[1:len(decoded_arr)]
+	case 2:
+		decoded_arr = decoded_arr[2:len(decoded_arr)]
+	case 3:
+		decoded_arr = decoded_arr[1:len(decoded_arr)]
+	}
 	return decoded_arr
 }
 
@@ -108,7 +118,4 @@ func (node *Node) Hash_node() string {
 
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
-}
-func main() {
-	fmt.Println("Hello World!")
 }

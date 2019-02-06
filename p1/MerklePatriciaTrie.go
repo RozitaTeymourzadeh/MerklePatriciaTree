@@ -40,19 +40,46 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	return "", errors.New("path_not_found")
 }
 
+func InitializeMpt() *MerklePatriciaTrie {
+	db := make(map[string]Node)
+	root := ""
+	return &MerklePatriciaTrie{db, root}
+}
+
 func (mpt *MerklePatriciaTrie) Delete(key string) error {
 	// TODO
 	return errors.New("path_not_found")
 }
 
 func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
-	// TODO
+	// first Insert
+	hex_array := HexConverter(key)
+	hex_array = append(hex_array, 16)
+	flagValue := Flag_value{
+		encoded_prefix: Compact_encode(hex_array),
+		value:          new_value,
+	}
 
+	newNode := Node{
+		node_type:  2,
+		flag_value: flagValue,
+	}
+
+	hashedNode := newNode.Hash_node()
+	mpt.db[hashedNode] = newNode
+	mpt.root = hashedNode
+
+	return
 }
 
 func Compact_encode(hex_array []uint8) []uint8 {
+
 	var term = 0
 	var result []uint8
+	if len(hex_array) == 0 {
+		fmt.Println("Invalid input data for Compact_encode")
+		return result
+	}
 	if hex_array[len(hex_array)-1] == 16 {
 		term = 1
 	}
@@ -73,15 +100,18 @@ func Compact_encode(hex_array []uint8) []uint8 {
 	return result
 }
 
-// If Leaf, ignore 16 at the end
 func Compact_decode(encoded_arr []uint8) []uint8 {
 
 	var decoded_arr []uint8
+	if len(encoded_arr) == 0 {
+		fmt.Println("Invalid input data for Compact_decode")
+		return decoded_arr
+	}
 	for i := 0; i < len(encoded_arr); i += 1 {
 		decoded_arr = append(decoded_arr, encoded_arr[i]/16)
 		decoded_arr = append(decoded_arr, encoded_arr[i]%16)
 	}
-	
+
 	switch decoded_arr[0] {
 	case 0:
 		decoded_arr = decoded_arr[2:len(decoded_arr)]
@@ -91,6 +121,8 @@ func Compact_decode(encoded_arr []uint8) []uint8 {
 		decoded_arr = decoded_arr[2:len(decoded_arr)]
 	case 3:
 		decoded_arr = decoded_arr[1:len(decoded_arr)]
+	default:
+		fmt.Println("FATAL: Invalid prefix for Compac_decoder function!")
 	}
 	return decoded_arr
 }

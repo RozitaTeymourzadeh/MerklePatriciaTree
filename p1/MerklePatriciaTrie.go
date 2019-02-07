@@ -9,6 +9,8 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+type stack []Node
+
 type Flag_value struct {
 	encoded_prefix []uint8
 	value          string
@@ -33,43 +35,6 @@ func HexConverter(key string) []uint8 {
 		hex_array = append(hex_array, key[i]%16)
 	}
 	return hex_array
-}
-
-func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
-	// TODO
-	return "", errors.New("path_not_found")
-}
-
-func InitializeMpt() *MerklePatriciaTrie {
-	db := make(map[string]Node)
-	root := ""
-	return &MerklePatriciaTrie{db, root}
-}
-
-func (mpt *MerklePatriciaTrie) Delete(key string) error {
-	// TODO
-	return errors.New("path_not_found")
-}
-
-func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
-	// first Insert
-	hex_array := HexConverter(key)
-	hex_array = append(hex_array, 16)
-	flagValue := Flag_value{
-		encoded_prefix: Compact_encode(hex_array),
-		value:          new_value,
-	}
-
-	newNode := Node{
-		node_type:  2,
-		flag_value: flagValue,
-	}
-
-	hashedNode := newNode.Hash_node()
-	mpt.db[hashedNode] = newNode
-	mpt.root = hashedNode
-
-	return
 }
 
 func Compact_encode(hex_array []uint8) []uint8 {
@@ -132,6 +97,61 @@ func Test_compact_encode() {
 	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
 	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
 	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+}
+
+func InitializeMpt() *MerklePatriciaTrie {
+	db := make(map[string]Node)
+	root := ""
+	return &MerklePatriciaTrie{db, root}
+}
+
+func InitializeStack() stack {
+	s := make(stack, 0)
+	return s
+}
+
+func (s stack) Push(v Node) stack {
+	return append(s, v)
+}
+
+func (s stack) Pop() (stack, Node) {
+	if len(s) == 0 {
+		fmt.Println("Stack is Empty!!")
+		return s, Node{}
+	}
+
+	l := len(s)
+	return s[:l-1], s[l-1]
+}
+
+func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
+	// TODO
+	return "", errors.New("path_not_found")
+}
+
+func (mpt *MerklePatriciaTrie) Delete(key string) error {
+	// TODO
+	return errors.New("path_not_found")
+}
+
+func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+	// first Insert
+	hex_array := HexConverter(key)
+	hex_array = append(hex_array, 16)
+	flagValue := Flag_value{
+		encoded_prefix: Compact_encode(hex_array),
+		value:          new_value,
+	}
+
+	newNode := Node{
+		node_type:  2,
+		flag_value: flagValue,
+	}
+
+	hashedNode := newNode.Hash_node()
+	mpt.db[hashedNode] = newNode
+	mpt.root = hashedNode
+	return
 }
 
 func (node *Node) Hash_node() string {

@@ -134,33 +134,71 @@ func (s stack) Pop() (stack, Node) {
 	l := len(s)
 	return s[:l-1], s[l-1]
 }
+func EqualArray(a, b []uint8) int {
+	var j int
+	// var i int
+	// i = 0
+	j = -1
+	if len(a) == 0 || len(b) == 0 {
+		return j
+	}
+	for i, v := range a {
+		if v == b[i] {
+			j++
+		} else {
+			break
+		}
+	}
+	fmt.Println("Number of simmilar index:", j)
+	return j
+}
 
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
-
+	var value string
 	hexPath := HexConverter(key)
 	currentNode := mpt.db[mpt.root]
+	currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
+
 	firstIndex := currentNode.flag_value.encoded_prefix[0]
 	NodeType := GetPrefix(firstIndex)
 
+	matchedIndex := EqualArray(currentPath, hexPath)
 	switch NodeType {
 	// Extension
 	case 0, 1:
-		currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
-		fmt.Println("Extention Node: ", currentPath)
+		// if whole match, return Branch Node Value
+		if matchedIndex == len(currentPath) {
+			nextBranchNode := mpt.db[currentNode.flag_value.value]
+			value = nextBranchNode.flag_value.value
+		} else if matchedIndex == 0 {
+			// if 1 match path
+			nextBranchNode := mpt.db[currentNode.flag_value.value]
+			if nextBranchNode.branch_value[hexPath[1]] != "" {
+				nextNode := mpt.db[nextBranchNode.branch_value[hexPath[1]]]
+				// if next node is Leaf {}
+
+				//if next node is Extension {}
+
+			}
+
+		}
 
 	// Leaf
 	case 2, 3:
-		currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
-		if currentPath == hexPath {
-
+		// if whole match, return Leaf Node Value
+		if matchedIndex == len(currentPath) {
+			value = currentNode.flag_value.value
+			return value, nil
+		} else {
+			// if NOT match, return Leaf Node Value
+			return "", errors.New("path_not_found")
 		}
-		fmt.Println("Leaf Node: ", currentPath)
+	default:
+		return "", errors.New("path_not_found")
 	}
 
-	fmt.Println("I am here : ", hexPath)
-
-	return "", errors.New("path_not_found")
+	return value, errors.New("path_not_found")
 }
 
 func (mpt *MerklePatriciaTrie) Delete(key string) error {

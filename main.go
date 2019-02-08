@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	// fmt.Println("hello world!")
+	fmt.Println("hello world!")
 	mpt := p1.InitializeMpt()
 	s := p1.InitializeStack()
 
@@ -17,7 +17,8 @@ func main() {
 	mpt.InsertRoot("a", "apple", s)
 	mpt.GetRootNode()
 	mpt.Get("a")
-
+	// j := p1.EqualArray([]uint8{},[]uint8{1, 6, 1})
+	//fmt.Println("Number of simmilar index:",j)
 	// s = s.Push(node1)
 	// s = s.Push(node2)
 	// s = s.Push(node3)
@@ -49,6 +50,5 @@ func main() {
 	//fmt.Println("Value:", p1.Compact_decode(p1.Compact_encode([]uint8{})))
 
 	//p1.Test_compact_encode()
-	fmt.Println(s)
 
 }

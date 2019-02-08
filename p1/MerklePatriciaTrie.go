@@ -65,6 +65,17 @@ func Compact_encode(hex_array []uint8) []uint8 {
 	return result
 }
 
+func GetPrefix(encoded_prefix uint8) uint8 {
+
+	var decoded_prefix uint8
+	if encoded_prefix == 0 {
+		fmt.Println("Invalid input data for Decoded_prefix")
+		return decoded_prefix
+	}
+	decoded_prefix = encoded_prefix / 16
+	return decoded_prefix
+}
+
 func Compact_decode(encoded_arr []uint8) []uint8 {
 
 	var decoded_arr []uint8
@@ -126,6 +137,29 @@ func (s stack) Pop() (stack, Node) {
 
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	// TODO
+
+	hexPath := HexConverter(key)
+	currentNode := mpt.db[mpt.root]
+	firstIndex := currentNode.flag_value.encoded_prefix[0]
+	NodeType := GetPrefix(firstIndex)
+
+	switch NodeType {
+	// Extension
+	case 0, 1:
+		currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
+		fmt.Println("Extention Node: ", currentPath)
+
+	// Leaf
+	case 2, 3:
+		currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
+		if currentPath == hexPath {
+
+		}
+		fmt.Println("Leaf Node: ", currentPath)
+	}
+
+	fmt.Println("I am here : ", hexPath)
+
 	return "", errors.New("path_not_found")
 }
 
@@ -134,24 +168,33 @@ func (mpt *MerklePatriciaTrie) Delete(key string) error {
 	return errors.New("path_not_found")
 }
 
-func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack) {
 	// first Insert
-	hex_array := HexConverter(key)
-	hex_array = append(hex_array, 16)
-	flagValue := Flag_value{
-		encoded_prefix: Compact_encode(hex_array),
-		value:          new_value,
+	if len(s) == 0 {
+		hex_array := HexConverter(key)
+		hex_array = append(hex_array, 16)
+		flagValue := Flag_value{
+			encoded_prefix: Compact_encode(hex_array),
+			value:          new_value,
+		}
+
+		newNode := Node{
+			node_type:  2,
+			flag_value: flagValue,
+		}
+
+		hashedNode := newNode.Hash_node()
+		mpt.db[hashedNode] = newNode
+		mpt.root = hashedNode
+		fmt.Println("Finish add")
+		//s.Push(newNode)
+		return
 	}
 
-	newNode := Node{
-		node_type:  2,
-		flag_value: flagValue,
-	}
+}
 
-	hashedNode := newNode.Hash_node()
-	mpt.db[hashedNode] = newNode
-	mpt.root = hashedNode
-	return
+func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+
 }
 
 func (node *Node) Hash_node() string {
@@ -170,4 +213,12 @@ func (node *Node) Hash_node() string {
 
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
+}
+
+func (mpt *MerklePatriciaTrie) GetRootNode() {
+	root := mpt.db[mpt.root]
+	fmt.Println("Nodetype: ", root.node_type)
+	fmt.Println("Branch:", root.branch_value)
+	fmt.Println("Prefix:", root.flag_value.encoded_prefix)
+	fmt.Println("Value: ", root.flag_value.value)
 }

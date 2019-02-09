@@ -15,10 +15,20 @@ func main() {
 	//node3 := p1.Node{}
 
 	mpt.InsertRoot("a", "apple", s)
+
+	/* Test GetRoot */
 	mpt.GetRootNode()
-	mpt.Get("a")
-	// j := p1.EqualArray([]uint8{},[]uint8{1, 6, 1})
-	//fmt.Println("Number of simmilar index:",j)
+
+	/* Test Get */
+	
+	mpt.CreateTestMpt()
+	mpt.Get("622")
+
+	/* Test ArrayEqual */
+	 //j, remainPath := p1.EqualArray([]uint8{1, 6, 1}, []uint8{1, 6, 1, 1})
+	 //fmt.Println("Number of simmilar index:", j, remainPath)
+
+	/* Test Stack */
 	// s = s.Push(node1)
 	// s = s.Push(node2)
 	// s = s.Push(node3)

@@ -22,7 +22,8 @@ func main() {
 	/* Test Get */
 	
 	mpt.CreateTestMpt()
-	mpt.Get("622")
+	value, errorMsg := mpt.Get("a")
+fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
 
 	/* Test ArrayEqual */
 	 //j, remainPath := p1.EqualArray([]uint8{1, 6, 1}, []uint8{1, 6, 1, 1})
@@ -48,10 +49,10 @@ func main() {
 	//fmt.Println("Encoded value of key is : ", p1.Compact_encode(p1.HexConverter(key)))
 	//fmt.Println("decoded value of key is : ", p1.Compact_decode(p1.Compact_encode(p1.HexConverter(key))))
 
-	//fmt.Println("Hex : ", p1.HexConverter("do"))
-	//fmt.Println("encode : ", p1.Compact_encode(p1.HexConverter("do")))
-	//fmt.Println("decoded : ", p1.Compact_decode(p1.Compact_encode(p1.HexConverter("do"))))
-	//fmt.Println("encode : ", p1.Compact_encode([]uint8{2, 16}))
+	// fmt.Println("Hex : ", p1.HexConverter("do"))
+	// fmt.Println("encode : ", p1.Compact_encode(p1.HexConverter("do")))
+	// fmt.Println("decoded : ", p1.Compact_decode(p1.Compact_encode(p1.HexConverter("do"))))
+	// fmt.Println("encode : ", p1.Compact_encode([]uint8{2, 16}))
 
 	//fmt.Println("Value:", p1.Compact_decode(p1.Compact_encode([]uint8{1, 6, 1})))
 	//fmt.Println("Value:", p1.Compact_decode(p1.Compact_encode([]uint8{2, 0, 6, 1})))

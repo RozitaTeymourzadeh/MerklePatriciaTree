@@ -170,28 +170,35 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	fmt.Println("remainPath is:",remainPath)
 	fmt.Println("matchedIndex is:",matchedIndex)
 	
-	for len(remainPath) != 0 {
-		if value == "" && errorMsg == nil && nodeType < 2{
+	for len(remainPath) != 0 && value == "" && errorMsg == nil {
+		fmt.Println(errorMsg)
+		if nodeType < 2{
+			
 			//Extention
-			value, errorMsg, remainPath, nodeType, nextNode := mpt.FindLeafNode(currentNode, searchPath) 
+			valueFln, errorMsgFln, remainPath, nodeType, nextNode := mpt.FindLeafNode(currentNode, searchPath) 
 			fmt.Println("----- Find Leaf Node ---------")
-			fmt.Println("value is:",value)
-			fmt.Println("errorMsg is:",errorMsg)
+			fmt.Println("value is:",valueFln)
+			fmt.Println("errorMsg is:",errorMsgFln)
 			fmt.Println("remainPath is:",remainPath)
 			fmt.Println("nodeType is:",nodeType)
 			fmt.Println("nextNode is:",nextNode)
 
 			searchPath = remainPath
 			currentNode = nextNode
+			errorMsg = errorMsgFln
+			value = valueFln
 		} 
 	}
 		if value == "" && errorMsg == nil && nodeType >= 2 {
 			//Leaf
-			value, errorMsg, remainPath := FindLeafValue (currentNode , searchPath)
+			valueFlv, errorMsgFlv, remainPath := FindLeafValue (currentNode , searchPath)
 			fmt.Println("----- Find Leaf Value ---------")
 			fmt.Println("value is:",value)
-			fmt.Println("errorMsg is:",errorMsg)
+			fmt.Println("errorMsg is:",errorMsgFlv)
 			fmt.Println("remainPath is:",remainPath)
+			value = valueFlv
+			errorMsg = errorMsgFlv
+
 		}
 	
 		return value, errorMsg
@@ -238,7 +245,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 			return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 		}	
 	}
-	return "", nil, remainPath, nodeType, nextNode
+	return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 }
 
 func (mpt *MerklePatriciaTrie) Delete(key string) error {

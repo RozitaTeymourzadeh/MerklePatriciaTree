@@ -23,12 +23,16 @@ func main() {
 	/* Test Get */
 	
 	mpt.CreateTestMpt()
-	// value, errorMsg := mpt.Get("do")
-	// fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
-	// value, errorMsg = mpt.Get("dog")
-	// fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
-	value, errorMsg := mpt.Get("horse")
-  fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	value, errorMsg := mpt.Get("do")
+	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	value, errorMsg = mpt.Get("dog")
+	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	value, errorMsg = mpt.Get("doge")
+	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	value, errorMsg = mpt.Get("horse")
+	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	value, errorMsg = mpt.Get("do\"")
+	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
 
 	/* Test ArrayEqual */
 	 //j, remainPath := p1.EqualArray([]uint8{1, 6, 1}, []uint8{1, 6, 1, 1})

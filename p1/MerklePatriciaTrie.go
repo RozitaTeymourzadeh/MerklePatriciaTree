@@ -153,9 +153,15 @@ func EqualArray(a, b []uint8) (int, []uint8) {
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	var value string
 	var errorMsg error
+	
+	var nodeType uint8 
+	nodeType = 100
 
 	currentNode := mpt.db[mpt.root]
-	nodeType := GetNodeType(currentNode)
+	if currentNode.node_type == 2{
+		nodeType = GetNodeType(currentNode)
+	}
+
 	//currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
 	searchPath := HexConverter(key)
 
@@ -210,14 +216,41 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	var remainPath []uint8
 	var nodeType uint8
 	var nextNode Node
-
-	currentPath := Compact_decode(node.flag_value.encoded_prefix)
+	var currentPath []uint8
+	var index uint8
+	//var branchCurrentPath []string
+	
+	if node.node_type == 2 {
+		// Extension or Leaf 
+		currentPath = Compact_decode(node.flag_value.encoded_prefix)
+	} else if node.node_type == 1 {
+		// Branch 
+		branchCurrentPath := node.branch_value
+	
+		for  index = 0; index < uint8(len(branchCurrentPath)) ; index++ {
+			if branchCurrentPath[index] != "" {
+				currentPath = append(currentPath, index)
+			}
+		}
+	} else {
+		// Null 
+		fmt.Println("Null Branch!!")
+		return value, errors.New("path_not_found"), remainPath, nodeType, nextNode
+	}
 	matchedIndex, remainPath := EqualArray(currentPath, searchPath)
-	// if whole match, return Branch Node Value
-	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 {
+	// if whole match, return Branch Node Value if current Node is Ext/Leaf
+	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 2 {
 		nextBranchNode := mpt.db[node.flag_value.value]
 		value = nextBranchNode.branch_value[16]
 		return value, nil, remainPath, nodeType, nextBranchNode
+	}
+	// if whole match, if current Node is Branch
+	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 1 {
+		nextNode := mpt.db[node.branch_value[currentPath[0]]]
+		if nextNode.node_type == 2{
+			value = nextNode.flag_value.value
+		}
+		return value, nil, remainPath, nodeType, nextNode
 	}
 	// if whole match path and remaining value
 	if matchedIndex+1 == len(currentPath) && len(remainPath) != 0 {
@@ -227,6 +260,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 			if nextNode.node_type == 1{
 				// Node is Branch - It is not the case as after extension is branch
 				 remainPath = remainPath[1:]
+				 
 			} else if nextNode.node_type == 2 {
 				// Leaf or Extension
 				nodeType = GetNodeType(nextNode)
@@ -351,6 +385,29 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	}
 	hashNodeE := nodeE.Hash_node()
 	mpt.db[hashNodeE] = nodeE
+/*---------- J ------------------ */
+flagValueNodeJ := Flag_value{
+	encoded_prefix: nil ,
+	value:          "book",
+}
+nodeJ := Node{
+	node_type:  2, //Extension
+	flag_value: flagValueNodeJ,
+}
+hashNodeJ := nodeJ.Hash_node()
+mpt.db[hashNodeJ] = nodeJ
+/*---------- H ------------------ */
+flagValueNodeH := Flag_value{
+	encoded_prefix: nil,
+	value:          "",
+}
+nodeH := Node{
+	node_type:    1, //Branch
+	flag_value:   flagValueNodeH,
+	branch_value: [17]string{"", "", hashNodeJ, "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
+}
+hashNodeH := nodeH.Hash_node()
+mpt.db[hashNodeH] = nodeH
 
 	/*---------- D ------------------ */
 	flagValueNodeD := Flag_value{
@@ -360,7 +417,7 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	nodeD := Node{
 		node_type:    1, //Branch
 		flag_value:   flagValueNodeD,
-		branch_value: [17]string{"", "", "", "", "", "", hashNodeE, "", "", "", "", "", "", "", "", "", "verb"},
+		branch_value: [17]string{"", "", hashNodeH, "", "", "", hashNodeE, "", "", "", "", "", "", "", "", "", "verb"},
 	}
 	hashNodeD := nodeD.Hash_node()
 	mpt.db[hashNodeD] = nodeD
@@ -399,6 +456,7 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	}
 	hashNodeA := nodeA.Hash_node()
 	mpt.db[hashNodeA] = nodeA
+
 /*---------- Root  ------------------ */
 	flagValueRoot := Flag_value{
 		encoded_prefix: Compact_encode([]uint8{6}),

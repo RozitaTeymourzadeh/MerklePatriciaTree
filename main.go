@@ -7,9 +7,11 @@ import (
 
 func main() {
 	fmt.Println("hello world!")
+	/* Initialize MPT and stack */
 	mpt := p1.InitializeMpt()
 	s := p1.InitializeStack()
 
+	/* Test Create Node */
 	//node1 := p1.Node{}
 	//node2 := p1.Node{}
 	//node3 := p1.Node{}
@@ -17,26 +19,26 @@ func main() {
 	mpt.InsertRoot("a", "apple", s)
 
 	/* Test GetRoot */
-	
 	//mpt.GetRootNode()
 
 	/* Test Get */
-	
 	mpt.CreateTestMpt()
 	value, errorMsg := mpt.Get("do")
-	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
 	value, errorMsg = mpt.Get("dog")
-	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
 	value, errorMsg = mpt.Get("doge")
-	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
 	value, errorMsg = mpt.Get("horse")
-	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
 	value, errorMsg = mpt.Get("do\"")
-	fmt.Println("Get value is : ", value , "Get ErrorMsg is :", errorMsg)
+	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	value, errorMsg = mpt.Get("")
+	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
 
 	/* Test ArrayEqual */
-	 //j, remainPath := p1.EqualArray([]uint8{1, 6, 1}, []uint8{1, 6, 1, 1})
-	 //fmt.Println("Number of simmilar index:", j, remainPath)
+	//j, remainPath := p1.EqualArray([]uint8{1, 6, 1}, []uint8{1, 6, 1, 1})
+	//fmt.Println("Number of simmilar index:", j, remainPath)
 
 	/* Test Stack */
 	// s = s.Push(node1)
@@ -52,6 +54,7 @@ func main() {
 	// s, p = s.Pop()
 	// fmt.Println(p)
 
+	/* Test HexConverter Encoder and Decoder */
 	//key := "a"
 	//fmt.Println("key is : ", key)
 	//fmt.Println("Converted Hex and input to Encoded value is: ", p1.HexConverter(key))
@@ -70,5 +73,4 @@ func main() {
 	//fmt.Println("Value:", p1.Compact_decode(p1.Compact_encode([]uint8{})))
 
 	//p1.Test_compact_encode()
-
 }

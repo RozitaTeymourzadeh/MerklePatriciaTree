@@ -120,7 +120,6 @@ func (s stack) Pop() (stack, Node) {
 		fmt.Println("Stack is Empty!!")
 		return s, Node{}
 	}
-
 	l := len(s)
 	return s[:l-1], s[l-1]
 }
@@ -151,50 +150,52 @@ func EqualArray(a, b []uint8) (int, []uint8) {
 }
 
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
+	var DEBUG int
+	DEBUG = 0
 	var value string
 	var errorMsg error
-	
 	var nodeType uint8 
 	nodeType = 100
-
+ if key == "" {
+	 fmt.Println("FATAl: Invalid KEY ...")
+	 return "", errors.New("path_not_found")
+ }
 	currentNode := mpt.db[mpt.root]
 	if currentNode.node_type == 2{
 		nodeType = GetNodeType(currentNode)
 	}
-
-	//currentPath := Compact_decode(currentNode.flag_value.encoded_prefix)
 	searchPath := HexConverter(key)
-
-	//matchedIndex, remainPath := EqualArray(currentPath, searchPath)
-
 	for len(searchPath) != 0 && value == "" && errorMsg == nil {
+		// if node_type is NULL, Branch, Leaf/Ext
 		if nodeType < 2 {
-
 			//Extention
 			valueFln, errorMsgFln, remainPath, nodeTypeFln, nextNode := mpt.FindLeafNode(currentNode, searchPath)
+			if  DEBUG == 1{
 			fmt.Println("----- Find Leaf Node ---------")
 			fmt.Println("value is:", valueFln)
 			fmt.Println("errorMsg is:", errorMsgFln)
 			fmt.Println("remainPath is:", remainPath)
 			fmt.Println("nodeType is:", nodeTypeFln)
 			fmt.Println("nextNode is:", nextNode)
-
+			}
 			searchPath = remainPath
 			currentNode = nextNode
 			errorMsg = errorMsgFln
 			nodeType = nodeTypeFln
 			value = valueFln
 		} else {
-		//Leaf
+			//Leaf
 			valueFlv, errorMsgFlv, remainPath := FindLeafValue(currentNode, searchPath)
+			if  DEBUG == 1{
 			fmt.Println("----- Find Leaf Value ---------")
 			fmt.Println("value is:", valueFlv)
 			fmt.Println("errorMsg is:", errorMsgFlv)
 			fmt.Println("remainPath is:", remainPath)
+			}
 			value = valueFlv
 			errorMsg = errorMsgFlv
 		}
-	}
+	} 
 	return value, errorMsg
 }
 
@@ -218,7 +219,6 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	var nextNode Node
 	var currentPath []uint8
 	var index uint8
-	//var branchCurrentPath []string
 	
 	if node.node_type == 2 {
 		// Extension or Leaf 
@@ -226,7 +226,6 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	} else if node.node_type == 1 {
 		// Branch 
 		branchCurrentPath := node.branch_value
-	
 		for  index = 0; index < uint8(len(branchCurrentPath)) ; index++ {
 			if branchCurrentPath[index] != "" {
 				currentPath = append(currentPath, index)
@@ -235,7 +234,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	} else {
 		// Null 
 		fmt.Println("Null Branch!!")
-		return value, errors.New("path_not_found"), remainPath, nodeType, nextNode
+		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 	}
 	matchedIndex, remainPath := EqualArray(currentPath, searchPath)
 	// if whole match, return Branch Node Value if current Node is Ext/Leaf
@@ -258,9 +257,8 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		if nextBranchNode.branch_value[remainPath[0]] != "" {
 			nextNode = mpt.db[nextBranchNode.branch_value[remainPath[0]]]
 			if nextNode.node_type == 1{
-				// Node is Branch - It is not the case as after extension is branch
+				// Node is Branch
 				 remainPath = remainPath[1:]
-				 
 			} else if nextNode.node_type == 2 {
 				// Leaf or Extension
 				nodeType = GetNodeType(nextNode)
@@ -385,30 +383,29 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	}
 	hashNodeE := nodeE.Hash_node()
 	mpt.db[hashNodeE] = nodeE
-/*---------- J ------------------ */
-flagValueNodeJ := Flag_value{
-	encoded_prefix: nil ,
-	value:          "book",
-}
-nodeJ := Node{
-	node_type:  2, //Extension
-	flag_value: flagValueNodeJ,
-}
-hashNodeJ := nodeJ.Hash_node()
-mpt.db[hashNodeJ] = nodeJ
-/*---------- H ------------------ */
-flagValueNodeH := Flag_value{
-	encoded_prefix: nil,
-	value:          "",
-}
-nodeH := Node{
-	node_type:    1, //Branch
-	flag_value:   flagValueNodeH,
-	branch_value: [17]string{"", "", hashNodeJ, "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
-}
-hashNodeH := nodeH.Hash_node()
-mpt.db[hashNodeH] = nodeH
-
+	/*---------- J ------------------ */
+	flagValueNodeJ := Flag_value{
+		encoded_prefix: nil ,
+		value:          "book",
+	}	
+	nodeJ := Node{
+		node_type:  2, //Extension
+		flag_value: flagValueNodeJ,
+	}
+	hashNodeJ := nodeJ.Hash_node()
+	mpt.db[hashNodeJ] = nodeJ
+	/*---------- H ------------------ */
+	flagValueNodeH := Flag_value{
+		encoded_prefix: nil,
+		value:          "",
+	}
+	nodeH := Node{
+		node_type:    1, //Branch
+		flag_value:   flagValueNodeH,
+		branch_value: [17]string{"", "", hashNodeJ, "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
+	}
+	hashNodeH := nodeH.Hash_node()
+	mpt.db[hashNodeH] = nodeH
 	/*---------- D ------------------ */
 	flagValueNodeD := Flag_value{
 		encoded_prefix: nil,
@@ -422,7 +419,7 @@ mpt.db[hashNodeH] = nodeH
 	hashNodeD := nodeD.Hash_node()
 	mpt.db[hashNodeD] = nodeD
 
- /*---------- B ------------------ */
+ 	/*---------- B ------------------ */
 	flagValueNodeB := Flag_value{
 		encoded_prefix: Compact_encode([]uint8{6, 15}),
 		value:          hashNodeD,
@@ -433,7 +430,7 @@ mpt.db[hashNodeH] = nodeH
 	}
 	hashNodeB := nodeB.Hash_node()
 	mpt.db[hashNodeB] = nodeB
-/*---------- C ------------------ */
+	/*---------- C ------------------ */
 	flagValueNodeC := Flag_value{
 		encoded_prefix: Compact_encode([]uint8{6, 15, 7, 2, 7, 3, 6, 5, 16}),
 		value:          "stallion",
@@ -444,7 +441,7 @@ mpt.db[hashNodeH] = nodeH
 	}
 	hashNodeC := nodeC.Hash_node()
 	mpt.db[hashNodeC] = nodeC
-/*---------- A ------------------ */
+	/*---------- A ------------------ */
 	flagValueNodeA := Flag_value{
 		encoded_prefix: nil,
 		value:          "",
@@ -457,7 +454,7 @@ mpt.db[hashNodeH] = nodeH
 	hashNodeA := nodeA.Hash_node()
 	mpt.db[hashNodeA] = nodeA
 
-/*---------- Root  ------------------ */
+	/*---------- Root  ------------------ */
 	flagValueRoot := Flag_value{
 		encoded_prefix: Compact_encode([]uint8{6}),
 		value:          hashNodeA,

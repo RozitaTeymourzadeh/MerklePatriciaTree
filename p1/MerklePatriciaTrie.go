@@ -155,7 +155,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	var value string
 	var errorMsg error
 	var nodeType uint8
-	nodeType = 100
+	nodeType = 0
 	if key == "" {
 		fmt.Println("FATAl: Invalid KEY ...")
 		return "", errors.New("path_not_found")
@@ -168,7 +168,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	for len(searchPath) != 0 && value == "" && errorMsg == nil {
 		// if node_type is NULL, Branch, Leaf/Ext
 		if nodeType < 2 {
-			//Extention
+			//Extention or Branch
 			valueFln, errorMsgFln, remainPath, nodeTypeFln, nextNode := mpt.FindLeafNode(currentNode, searchPath)
 			if DEBUG == 1 {
 				fmt.Println("----- Find Leaf Node ---------")
@@ -244,8 +244,10 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		return value, nil, remainPath, nodeType, nextBranchNode
 	}
 	// if whole match, if current Node is Branch
-	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 1 {
-		nextNode := mpt.db[node.branch_value[currentPath[0]]]
+	if node.branch_value[searchPath[0]] != ""  && node.node_type == 1 {//TODO
+		
+			nextNode = mpt.db[node.branch_value[searchPath[0]]]
+		
 		if nextNode.node_type == 2 {
 			value = nextNode.flag_value.value
 		}
@@ -472,5 +474,46 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	hashNodeRoot := nodeRoot.Hash_node()
 	mpt.db[hashNodeRoot] = nodeRoot
 	mpt.root = hashNodeRoot
+	return errors.New("Problem occured while creating Root Node")
+}
+
+func (mpt *MerklePatriciaTrie) CreateTestMpt3() error {
+	mpt.db = make(map[string]Node)
+
+	flagValueNodeC := Flag_value{
+		encoded_prefix: Compact_encode([]uint8{2}),
+		value:          "pie",
+	}
+	nodeC := Node{
+		node_type:  2, //Leaf
+		flag_value: flagValueNodeC,
+	}
+	hashNodeC := nodeC.Hash_node()
+	mpt.db[hashNodeC] = nodeC
+
+	flagValueNodeB := Flag_value{
+		encoded_prefix: Compact_encode([]uint8{1}),
+		value:          "apple",
+	}
+	nodeB := Node{
+		node_type:  2, //Leaf
+		flag_value: flagValueNodeB,
+	}
+	hashNodeB := nodeB.Hash_node()
+	mpt.db[hashNodeB] = nodeB
+
+	flagValueNodeRootA := Flag_value{
+		encoded_prefix: nil,
+		value:          "",
+	}
+	nodeRootA := Node{
+		node_type:    1, //Branch
+		flag_value:   flagValueNodeRootA,
+		branch_value: [17]string{"", "", "", "", "", "", hashNodeB, hashNodeC, "", "", "", "", "", "", "", "", ""},
+	}
+
+	hashNodeRootA := nodeRootA.Hash_node()
+	mpt.db[hashNodeRootA] = nodeRootA
+	mpt.root = hashNodeRootA
 	return errors.New("Problem occured while creating Root Node")
 }

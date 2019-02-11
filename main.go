@@ -9,32 +9,43 @@ func main() {
 	fmt.Println("hello world!")
 	/* Initialize MPT and stack */
 	mpt := p1.InitializeMpt()
-	s := p1.InitializeStack()
+	//s := p1.InitializeStack()
 
 	/* Test Create Node */
 	//node1 := p1.Node{}
 	//node2 := p1.Node{}
 	//node3 := p1.Node{}
 
-	mpt.InsertRoot("a", "apple", s)
+	//mpt.InsertRoot("a", "apple", s)
 
 	/* Test GetRoot */
 	//mpt.GetRootNode()
 
 	/* Test Get */
 	mpt.CreateTestMpt()
-	value, errorMsg := mpt.Get("do")
-	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
-	value, errorMsg = mpt.Get("dog")
-	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
-	value, errorMsg = mpt.Get("doge")
-	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
-	value, errorMsg = mpt.Get("horse")
-	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
-	value, errorMsg = mpt.Get("do\"")
-	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
-	value, errorMsg = mpt.Get("")
-	fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg := mpt.Get("do")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg = mpt.Get("dog")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg = mpt.Get("doge")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg = mpt.Get("horse")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg = mpt.Get("do\"")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg = mpt.Get("")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+
+	// mpt.CreateTestMpt3()
+	// value, errorMsg = mpt.Get("r")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+	// value, errorMsg = mpt.Get("a")
+	// fmt.Println("Get value is : ", value, "Get ErrorMsg is :", errorMsg)
+
+	value, err := mpt.Delete("do")
+	fmt.Println(value, err)
+	 
+
 
 	/* Test ArrayEqual */
 	//j, remainPath := p1.EqualArray([]uint8{1, 6, 1}, []uint8{1, 6, 1, 1})

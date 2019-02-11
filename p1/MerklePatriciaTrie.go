@@ -154,14 +154,14 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	DEBUG = 0
 	var value string
 	var errorMsg error
-	var nodeType uint8 
+	var nodeType uint8
 	nodeType = 100
- if key == "" {
-	 fmt.Println("FATAl: Invalid KEY ...")
-	 return "", errors.New("path_not_found")
- }
+	if key == "" {
+		fmt.Println("FATAl: Invalid KEY ...")
+		return "", errors.New("path_not_found")
+	}
 	currentNode := mpt.db[mpt.root]
-	if currentNode.node_type == 2{
+	if currentNode.node_type == 2 {
 		nodeType = GetNodeType(currentNode)
 	}
 	searchPath := HexConverter(key)
@@ -170,13 +170,13 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 		if nodeType < 2 {
 			//Extention
 			valueFln, errorMsgFln, remainPath, nodeTypeFln, nextNode := mpt.FindLeafNode(currentNode, searchPath)
-			if  DEBUG == 1{
-			fmt.Println("----- Find Leaf Node ---------")
-			fmt.Println("value is:", valueFln)
-			fmt.Println("errorMsg is:", errorMsgFln)
-			fmt.Println("remainPath is:", remainPath)
-			fmt.Println("nodeType is:", nodeTypeFln)
-			fmt.Println("nextNode is:", nextNode)
+			if DEBUG == 1 {
+				fmt.Println("----- Find Leaf Node ---------")
+				fmt.Println("value is:", valueFln)
+				fmt.Println("errorMsg is:", errorMsgFln)
+				fmt.Println("remainPath is:", remainPath)
+				fmt.Println("nodeType is:", nodeTypeFln)
+				fmt.Println("nextNode is:", nextNode)
 			}
 			searchPath = remainPath
 			currentNode = nextNode
@@ -186,16 +186,16 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 		} else {
 			//Leaf
 			valueFlv, errorMsgFlv, remainPath := FindLeafValue(currentNode, searchPath)
-			if  DEBUG == 1{
-			fmt.Println("----- Find Leaf Value ---------")
-			fmt.Println("value is:", valueFlv)
-			fmt.Println("errorMsg is:", errorMsgFlv)
-			fmt.Println("remainPath is:", remainPath)
+			if DEBUG == 1 {
+				fmt.Println("----- Find Leaf Value ---------")
+				fmt.Println("value is:", valueFlv)
+				fmt.Println("errorMsg is:", errorMsgFlv)
+				fmt.Println("remainPath is:", remainPath)
 			}
 			value = valueFlv
 			errorMsg = errorMsgFlv
 		}
-	} 
+	}
 	return value, errorMsg
 }
 
@@ -219,20 +219,20 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	var nextNode Node
 	var currentPath []uint8
 	var index uint8
-	
+
 	if node.node_type == 2 {
-		// Extension or Leaf 
+		// Extension or Leaf
 		currentPath = Compact_decode(node.flag_value.encoded_prefix)
 	} else if node.node_type == 1 {
-		// Branch 
+		// Branch
 		branchCurrentPath := node.branch_value
-		for  index = 0; index < uint8(len(branchCurrentPath)) ; index++ {
+		for index = 0; index < uint8(len(branchCurrentPath)); index++ {
 			if branchCurrentPath[index] != "" {
 				currentPath = append(currentPath, index)
 			}
 		}
 	} else {
-		// Null 
+		// Null
 		fmt.Println("Null Branch!!")
 		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 	}
@@ -246,7 +246,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	// if whole match, if current Node is Branch
 	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 1 {
 		nextNode := mpt.db[node.branch_value[currentPath[0]]]
-		if nextNode.node_type == 2{
+		if nextNode.node_type == 2 {
 			value = nextNode.flag_value.value
 		}
 		return value, nil, remainPath, nodeType, nextNode
@@ -256,13 +256,13 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		nextBranchNode := mpt.db[node.flag_value.value]
 		if nextBranchNode.branch_value[remainPath[0]] != "" {
 			nextNode = mpt.db[nextBranchNode.branch_value[remainPath[0]]]
-			if nextNode.node_type == 1{
+			if nextNode.node_type == 1 {
 				// Node is Branch
-				 remainPath = remainPath[1:]
+				remainPath = remainPath[1:]
 			} else if nextNode.node_type == 2 {
 				// Leaf or Extension
 				nodeType = GetNodeType(nextNode)
-				if nodeType  < 2 {
+				if nodeType < 2 {
 					//Extension
 					remainPath = remainPath[1:]
 				} else {
@@ -275,12 +275,18 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 			return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 		}
 	}
-	return "", nil , remainPath, nodeType, nextNode
+	return "", nil, remainPath, nodeType, nextNode
 }
 
-func (mpt *MerklePatriciaTrie) Delete(key string) error {
-	// TODO
-	return errors.New("path_not_found")
+func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
+	var value string
+
+	if key == "" {
+		fmt.Println("FATAl: Invalid KEY ...")
+		return "", errors.New("path_not_found")
+
+	}
+	return value, errors.New("path_not_found")
 }
 
 func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack) {
@@ -385,9 +391,9 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	mpt.db[hashNodeE] = nodeE
 	/*---------- J ------------------ */
 	flagValueNodeJ := Flag_value{
-		encoded_prefix: nil ,
+		encoded_prefix: nil,
 		value:          "book",
-	}	
+	}
 	nodeJ := Node{
 		node_type:  2, //Extension
 		flag_value: flagValueNodeJ,
@@ -419,7 +425,7 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	hashNodeD := nodeD.Hash_node()
 	mpt.db[hashNodeD] = nodeD
 
- 	/*---------- B ------------------ */
+	/*---------- B ------------------ */
 	flagValueNodeB := Flag_value{
 		encoded_prefix: Compact_encode([]uint8{6, 15}),
 		value:          hashNodeD,

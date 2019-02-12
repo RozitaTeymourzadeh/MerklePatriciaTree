@@ -550,6 +550,43 @@ func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack)
 	}
 }
 
+/* GetNodePath
+* To find the path of specific node
+*@ input: key string, new_value string, s stack
+*@ output: None
+ */
+func (mpt *MerklePatriciaTrie) GetNodePath(path []uint8, nodeHash string) ([]Node, []uint8) {
+	node := mpt.GetNodeByHash(nodeHash)
+	if node.IsLeaf() {
+		nodePath := compact_decode(node.flag_value.encoded_prefix)
+			if IsPathPrefix(nodePath, path) {
+				return []Node{node}, path[len(nodePath):]
+			}
+		return []Node{}, path
+	}
+	if node.IsExtension() {
+		extensionPath := compact_decode(node.flag_value.encoded_prefix)
+		if !IsPathPrefix(extensionPath, path) {
+			return []Node{}, path
+		}
+	branchNode := mpt.GetNodeByHash(node.flag_value.value)
+	CheckState(branchNode.IsBranch(),
+	fmt.Sprintf("Found an extension node that does not point to a branch node. "+
+						"Extension: %s, child: %s",
+	node.PrintNode(), branchNode.PrintNode()))
+	recNodePath, recRemainingPath := mpt.GetNodePath(path[len(extensionPath):], node.flag_value.value)
+	return append([]Node{node}, recNodePath...), recRemainingPath
+	}
+	CheckState(node.IsBranch(), fmt.Sprintf("Found node of unknown type: %s", node.PrintNode()))
+	if (len(path) == 0) || (node.branch_value[path[0]] == "") {
+		return []Node{node}, path
+	}
+	recNodePath, recRemainingPath := mpt.GetNodePath(path[1:], node.branch_value[path[0]])
+	if len(recNodePath) > 0 {
+		return append([]Node{node}, recNodePath...), recRemainingPath
+	}
+return []Node{node}, path
+}
 
 /*-------------------------NODE HELPER---------------------------------------------------*/
 /* Node accessories

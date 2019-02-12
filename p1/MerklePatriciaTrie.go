@@ -176,7 +176,7 @@ func (s stack) Pop() (stack, Node) {
 * To compare 2 arrays and return no. of match index
 *@ input: a []uint8, b []uint8`
 *@ output: j int , remainPath []uint8
- */
+*/
 func EqualArray(a, b []uint8) (int, []uint8) {
 	var j int
 	var remainPath []uint8
@@ -203,6 +203,28 @@ func EqualArray(a, b []uint8) (int, []uint8) {
 	return j, remainPath
 }
 
+/* PathsAreEqual
+* To compare 2 path and return true if those are the same 
+*@ input: path1 []uint8, path2 []uint8
+*@ output: bool
+*/
+func PathsAreEqual(path1 []uint8, path2 []uint8) bool {
+	if path1 == nil {
+		return path2 == nil
+	}
+	if path2 == nil {
+		return false
+	}
+	if len(path1) != len(path2) {
+		return false
+	}
+	for i := 0; i < len(path1); i++ {
+		if path1[i] != path2[i] {
+		return false
+		}
+	}
+	return true
+}
 /*-------------------------MASTER---------------------------------------------------*/
 /* Master Functions
 /*-------------------------MASTER---------------------------------------------------*/

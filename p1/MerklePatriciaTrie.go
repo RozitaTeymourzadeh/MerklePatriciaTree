@@ -35,13 +35,11 @@ type MerklePatriciaTrie struct {
 /* Service functions act as helper function to others master functions
 /*-------------------------SERVICE---------------------------------------------------*/
 
-
-
 /* compact_decode
 * To reverse compact encode value
 *@ input: encoded_arr []uint8
 *@ output: decoded_arr []uint8
-*/
+ */
 func compact_decode(encoded_arr []uint8) []uint8 {
 
 	var decoded_arr []uint8
@@ -69,12 +67,11 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 	return decoded_arr
 }
 
-
 /* compact_encode
 * To encode hex Key
-*@ input: hex_array []uint8 
+*@ input: hex_array []uint8
 *@ output: result []uint8
-*/
+ */
 func compact_encode(hex_array []uint8) []uint8 {
 
 	var term = 0
@@ -107,7 +104,7 @@ func compact_encode(hex_array []uint8) []uint8 {
 * To decide on Extension and Leaf type
 *@ input: node Node
 *@ output: nodeType uint8
-*/
+ */
 func GetNodeType(node Node) uint8 {
 
 	var nodeType uint8
@@ -120,7 +117,7 @@ func GetNodeType(node Node) uint8 {
 * To convert key into Hex value
 *@ input: Key string
 *@ output: hex_array []uint8
-*/
+ */
 func HexConverter(key string) []uint8 {
 	var hex_array []uint8
 
@@ -135,7 +132,7 @@ func HexConverter(key string) []uint8 {
 * To initialize mpt
 *@ input: None
 *@ output: pointerto tree
-*/
+ */
 func InitializeMpt() *MerklePatriciaTrie {
 	db := make(map[string]Node)
 	root := ""
@@ -146,21 +143,26 @@ func InitializeMpt() *MerklePatriciaTrie {
 * To initialize stack
 *@ input: None
 *@ output: s stack
-*/
+ */
 func InitializeStack() stack {
 	s := make(stack, 0)
 	return s
 }
 
-/* InitializeStack
-* To initialize stack
-*@ input: None
+/* Push
+* To push into stack
+*@ input: v None
 *@ output: s stack
-*/
+ */
 func (s stack) Push(v Node) stack {
 	return append(s, v)
 }
 
+/* Pop
+* To Pop from stack
+*@ input: n Node, s stack
+*@ output: n Node,s stack
+ */
 func (s stack) Pop() (stack, Node) {
 	l := len(s)
 	if l == 0 {
@@ -169,6 +171,12 @@ func (s stack) Pop() (stack, Node) {
 	}
 	return s[:l-1], s[l-1]
 }
+
+/* EqualArray
+* To compare 2 arrays and return no. of match index
+*@ input: a []uint8, b []uint8`
+*@ output: j int , remainPath []uint8
+ */
 func EqualArray(a, b []uint8) (int, []uint8) {
 	var j int
 	var remainPath []uint8
@@ -194,6 +202,17 @@ func EqualArray(a, b []uint8) (int, []uint8) {
 	remainPath = b[j+1:]
 	return j, remainPath
 }
+
+/*-------------------------MASTER---------------------------------------------------*/
+/* Master Functions
+/*-------------------------MASTER---------------------------------------------------*/
+
+/* Get
+* To receive key and return associated value with key
+* It return empty string if not find
+*@ input: key string
+*@ output: value string, errorMsg error
+ */
 func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	var DEBUG int
 	DEBUG = 0
@@ -203,7 +222,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	nodeType = 0
 	if key == "" {
 		fmt.Println("FATAl: Invalid KEY ...")
-		return "", errors.New("path_not_found")
+		return "", errors.New("FATAl: Invalid KEY ...")
 	}
 	currentNode := mpt.db[mpt.root]
 	if currentNode.node_type == 2 {
@@ -235,49 +254,57 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	}
 	return value, errorMsg
 }
-func (mpt *MerklePatriciaTrie) GetToDelete(key string) (string, error, stack) {
 
-	var value string
-	var errorMsg error
-	var nodeType uint8
-	nodeType = 0
-	s := InitializeStack()
-	if key == "" {
-		fmt.Println("FATAl: Invalid KEY ...")
-		return "", errors.New("path_not_found"), nil
-	}
-	currentNode := mpt.db[mpt.root]
-	if currentNode.node_type != 0 {
-		s = s.Push(currentNode)
-	}
-	
-	if currentNode.node_type == 2 {
-		nodeType = GetNodeType(currentNode)
-	}
-	searchPath := HexConverter(key)
-	for len(searchPath) != 0 && value == "" && errorMsg == nil {
-		// if node_type is NULL, Branch, Leaf/Ext
-		if nodeType < 2 {
-			//Extention or Branch
-			valueFln, errorMsgFln, remainPath, nodeTypeFln, nextNodeFln, sFln := mpt.FindLeafNodeToDelete(currentNode, searchPath, s)
-			
-			searchPath = remainPath
-			currentNode = nextNodeFln
-			errorMsg = errorMsgFln
-			nodeType = nodeTypeFln
-			value = valueFln
-			s = sFln
-		} else {
-			//Leaf
-			valueFlv, errorMsgFlv, _ := FindLeafValue(currentNode, searchPath)
-			value = valueFlv
-			errorMsg = errorMsgFlv
-		}
-	}
-	return value, errorMsg, s
+/* Insert
+* To Insert value into MPT
+* 
+*@ input: key string, new_value string
+*@ output: none
+ */
+func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+	// TODO
 }
 
-func FindLeafValue(node Node, searchPath []uint8) (string, error, []uint8) {
+/* Delete
+* To Delete value from MPT
+* Return empty string
+*@ input: key string
+*@ output: value, errorMsg
+ */
+func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
+	var value string
+
+	if key == "" {
+		fmt.Println("FATAl: Invalid KEY ...")
+		return "", errors.New("path_not_found")
+	}
+	value, err, s := mpt.GetToDelete(key)
+	fmt.Println("Slack length is:", len(s))
+	s, p := s.Pop()
+	fmt.Println(p)
+	s, p = s.Pop()
+	fmt.Println(p)
+	s, p = s.Pop()
+	fmt.Println(p)
+	s, p = s.Pop()
+	fmt.Println(p)
+
+	fmt.Println(err)
+	return value, errors.New("path_not_found")
+}
+
+
+/*-------------------------GET HELPER---------------------------------------------------*/
+/* SubFunction of Get Master Function
+/*-------------------------GET HELPER---------------------------------------------------*/
+
+/* FindLeafValue
+* To find value in Leaf node
+* The pointer is in leaf node when we are here
+*@ input: node Node, searchPath []uint8
+*@ output: value string, errorMsg error, remainPath []uint8
+ */
+ func FindLeafValue(node Node, searchPath []uint8) (string, error, []uint8) {
 	currentPath := compact_decode(node.flag_value.encoded_prefix)
 	matchedIndex, remainPath := EqualArray(currentPath, searchPath)
 	// if whole match, return Leaf Node Value
@@ -290,6 +317,11 @@ func FindLeafValue(node Node, searchPath []uint8) (string, error, []uint8) {
 	}
 }
 
+/* FindLeafNode
+* To find Leaf Node 
+*@ input: node Node, searchPath []uint8
+*@ output: string, error, []uint8, uint8, Node
+ */
 func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (string, error, []uint8, uint8, Node) {
 	var value string
 	var remainPath []uint8
@@ -322,9 +354,9 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		return value, nil, remainPath, nodeType, nextBranchNode
 	}
 	// if whole match, if current Node is Branch
-	if node.branch_value[searchPath[0]] != ""  && node.node_type == 1 {
-			nextNode = mpt.db[node.branch_value[searchPath[0]]]
-		if nextNode.node_type == 1 && len(searchPath) == 1{
+	if node.branch_value[searchPath[0]] != "" && node.node_type == 1 {
+		nextNode = mpt.db[node.branch_value[searchPath[0]]]
+		if nextNode.node_type == 1 && len(searchPath) == 1 {
 			value = nextNode.branch_value[16]
 		} else if nextNode.node_type == 2 {
 			value = nextNode.flag_value.value
@@ -359,7 +391,66 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	return "", nil, remainPath, nodeType, nextNode
 }
 
-func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint8, s stack) (string, error, []uint8, uint8, Node, stack) {
+
+/*-------------------------DELETE HELPER---------------------------------------------------*/
+/* SubFunction of Get Master Function
+/*-------------------------DELETE HELPER---------------------------------------------------*/
+
+/* GetToDelete 
+* Type: (Optional)
+* To find key value pair for delete purpose
+* It return empty string if not find
+*@ input: key string
+*@ output: value string, errorMsg error, s stack
+ */
+func (mpt *MerklePatriciaTrie) GetToDelete(key string) (string, error, stack) {
+	var value string
+	var errorMsg error
+	var nodeType uint8
+	nodeType = 0
+	s := InitializeStack()
+	if key == "" {
+		fmt.Println("FATAl: Invalid KEY ...")
+		return "", errors.New("path_not_found"), nil
+	}
+	currentNode := mpt.db[mpt.root]
+	if currentNode.node_type != 0 {
+		s = s.Push(currentNode)
+	}
+
+	if currentNode.node_type == 2 {
+		nodeType = GetNodeType(currentNode)
+	}
+	searchPath := HexConverter(key)
+	for len(searchPath) != 0 && value == "" && errorMsg == nil {
+		// if node_type is NULL, Branch, Leaf/Ext
+		if nodeType < 2 {
+			//Extention or Branch
+			valueFln, errorMsgFln, remainPath, nodeTypeFln, nextNodeFln, sFln := mpt.FindLeafNodeToDelete(currentNode, searchPath, s)
+
+			searchPath = remainPath
+			currentNode = nextNodeFln
+			errorMsg = errorMsgFln
+			nodeType = nodeTypeFln
+			value = valueFln
+			s = sFln
+		} else {
+			//Leaf
+			valueFlv, errorMsgFlv, _ := FindLeafValue(currentNode, searchPath)
+			value = valueFlv
+			errorMsg = errorMsgFlv
+		}
+	}
+	return value, errorMsg, s
+}
+
+/* FindLeafNodeToDelete
+* Type: (Optional)
+* To find Leaf Node for Delete purpose
+*@ input: node Node, searchPath []uint8
+*@ output: string, error, []uint8, uint8, Node
+ */
+func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint8, s stack) (string, error, []uint8, 		uint8, Node, stack) {
 	var value string
 	var remainPath []uint8
 	var nodeType uint8
@@ -392,9 +483,9 @@ func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint
 		return value, nil, remainPath, nodeType, nextBranchNode, s
 	}
 	// if whole match, if current Node is Branch
-	if node.branch_value[searchPath[0]] != ""  && node.node_type == 1 {
-			nextNode = mpt.db[node.branch_value[searchPath[0]]]
-			s = s.Push(nextNode)
+	if node.branch_value[searchPath[0]] != "" && node.node_type == 1 {
+		nextNode = mpt.db[node.branch_value[searchPath[0]]]
+		s = s.Push(nextNode)
 		if nextNode.node_type == 2 {
 			value = nextNode.flag_value.value
 		}
@@ -429,33 +520,16 @@ func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint
 	return "", nil, remainPath, nodeType, nextNode, s
 }
 
-func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
-	// TODO
-}
+/*-------------------------INSERT HELPER---------------------------------------------------*/
+/* SubFunction of Insert Master Function
+/*-------------------------INSERT HELPER---------------------------------------------------*/
 
-
-func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
-	var value string
-
-	if key == "" {
-		fmt.Println("FATAl: Invalid KEY ...")
-		return "", errors.New("path_not_found")
-	}
-	value, err, s := mpt.GetToDelete(key) 
-	fmt.Println("Slack length is:",len(s))
-	s, p := s.Pop()
-	fmt.Println(p)
-	s, p = s.Pop()
-	fmt.Println(p)
-	s, p = s.Pop()
-	fmt.Println(p)
-	s, p = s.Pop()
-	fmt.Println(p)
-
-	fmt.Println(err)
-	return value, errors.New("path_not_found")
-}
-
+/* InsertRoot
+* Type: (Optional)
+* To Insert value on root
+*@ input: key string, new_value string, s stack
+*@ output: None
+ */
 func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack) {
 	// first Insert
 	if len(s) == 0 {
@@ -465,21 +539,44 @@ func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack)
 			encoded_prefix: compact_encode(hex_array),
 			value:          new_value,
 		}
-
 		newNode := Node{
 			node_type:  2,
 			flag_value: flagValue,
 		}
-
 		hashedNode := newNode.hash_node()
 		mpt.db[hashedNode] = newNode
 		mpt.root = hashedNode
 		return
 	}
-
 }
 
-func (node *Node) hash_node() string {
+
+/*-------------------------NODE HELPER---------------------------------------------------*/
+/* Node accessories
+/*-------------------------NODE HELPER---------------------------------------------------*/
+
+/* GetRootNode
+* Type: (Optional)
+* To Print Root
+*@ input: None
+*@ output: None
+ */
+
+func (mpt *MerklePatriciaTrie) GetRootNode() {
+	root := mpt.db[mpt.root]
+	fmt.Println("Nodetype: ", root.node_type)
+	fmt.Println("Branch:", root.branch_value)
+	fmt.Println("Prefix:", root.flag_value.encoded_prefix)
+	fmt.Println("Value: ", root.flag_value.value)
+}
+
+/* hash_node
+* 
+* To convert node as hashNode (HashValue)
+*@ input: node *Node
+*@ output: str string
+ */
+ func (node *Node) hash_node() string {
 	var str string
 	switch node.node_type {
 	case 0:
@@ -497,45 +594,15 @@ func (node *Node) hash_node() string {
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
 }
 
-func (mpt *MerklePatriciaTrie) GetRootNode() {
-	root := mpt.db[mpt.root]
-	fmt.Println("Nodetype: ", root.node_type)
-	fmt.Println("Branch:", root.branch_value)
-	fmt.Println("Prefix:", root.flag_value.encoded_prefix)
-	fmt.Println("Value: ", root.flag_value.value)
-}
-func Test_compact_encode() {
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
-}
 
-func Test_Insert_Get() {
-	mpt := InitializeMpt()
-	mpt.Insert("a","apple")
-	mpt.Insert("ab","banana")
-	mpt.Insert("acb","horse")
-	mpt.Insert("bfge","Dog")
-	mpt.Insert("c","Doggy")
-	mpt.Insert("r","Lucy")
-	value1, _ := mpt.Get("a")
-	value2, _ := mpt.Get("ab")
-	value3, _ := mpt.Get("acb")
-	value4, _ := mpt.Get("bfge")
-	value5, _ := mpt.Get("c")
-	value6, _ := mpt.Get("r")
+/*-------------------------TEST---------------------------------------------------*/
+/* To Test the project (Functions and Subfunction)
+/*-------------------------TEST---------------------------------------------------*/
 
-
-	fmt.Println(reflect.DeepEqual("apple", value1))
-	fmt.Println(reflect.DeepEqual("banana", value2))
-	fmt.Println(reflect.DeepEqual("horse", value3))
-	fmt.Println(reflect.DeepEqual("Dog", value4))
-	fmt.Println(reflect.DeepEqual("Doggy", value5))
-	fmt.Println(reflect.DeepEqual("Lucy", value6))
-}
-
-/* Test : Create Dummy Map  */
+/* CreateTestMpt
+* 
+* To create dummy Mpt
+*/
 func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	mpt.db = make(map[string]Node)
 
@@ -660,6 +727,11 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	mpt.root = hashNodeRoot
 	return errors.New("Problem occured while creating Root Node")
 }
+
+/* CreateTestMpt3
+* 
+* To create dummy Mpt
+*/
 func (mpt *MerklePatriciaTrie) CreateTestMpt3() error {
 	mpt.db = make(map[string]Node)
 
@@ -701,18 +773,59 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt3() error {
 	return errors.New("Problem occured while creating Root Node")
 }
 
-/* Test: Test Get Function */
-func (mpt *MerklePatriciaTrie) Test_Get(){
+/* Test_compact_encode
+* 
+* To Test compact_encode()
+*/
+func Test_compact_encode() {
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+}
+
+/* Test_Insert_Get
+* 
+* To Test Insert and Get functions
+*/
+func Test_Insert_Get() {
+	mpt := InitializeMpt()
+	mpt.Insert("a", "apple")
+	mpt.Insert("ab", "banana")
+	mpt.Insert("acb", "horse")
+	mpt.Insert("bfge", "Dog")
+	mpt.Insert("c", "Doggy")
+	mpt.Insert("r", "Lucy")
+	value1, _ := mpt.Get("a")
+	value2, _ := mpt.Get("ab")
+	value3, _ := mpt.Get("acb")
+	value4, _ := mpt.Get("bfge")
+	value5, _ := mpt.Get("c")
+	value6, _ := mpt.Get("r")
+
+	fmt.Println(reflect.DeepEqual("apple", value1))
+	fmt.Println(reflect.DeepEqual("banana", value2))
+	fmt.Println(reflect.DeepEqual("horse", value3))
+	fmt.Println(reflect.DeepEqual("Dog", value4))
+	fmt.Println(reflect.DeepEqual("Doggy", value5))
+	fmt.Println(reflect.DeepEqual("Lucy", value6))
+}
+
+/* Test_Get
+* 
+* To Test Get functions
+*/
+func (mpt *MerklePatriciaTrie) Test_Get() {
 	mpt = InitializeMpt()
 	mpt.CreateTestMpt()
-	
+
 	value1, _ := mpt.Get("do")
 	value2, _ := mpt.Get("dog")
 	value3, _ := mpt.Get("doge")
 	value4, _ := mpt.Get("horse")
 	value5, _ := mpt.Get("do\"")
 	value6, _ := mpt.Get("")
-	
+
 	fmt.Println(reflect.DeepEqual("verb", value1))
 	fmt.Println(reflect.DeepEqual("puppy", value2))
 	fmt.Println(reflect.DeepEqual("coin", value3))
@@ -722,16 +835,10 @@ func (mpt *MerklePatriciaTrie) Test_Get(){
 
 	mpt = InitializeMpt()
 	mpt.CreateTestMpt3()
-	
+
 	value7, _ := mpt.Get("r")
 	value8, _ := mpt.Get("a")
 
 	fmt.Println(reflect.DeepEqual("pie", value7))
 	fmt.Println(reflect.DeepEqual("apple", value8))
 }
-	
-
-
-
-
-

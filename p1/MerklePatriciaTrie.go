@@ -570,12 +570,40 @@ func (mpt *MerklePatriciaTrie) GetRootNode() {
 	fmt.Println("Value: ", root.flag_value.value)
 }
 
+/* NewLeafNodeWithValue
+* To Print Root
+*@ input: path []uint8, value string
+*@ output: Node
+ */
+func NewLeafNodeWithValue(path []uint8, value string) Node {
+	return Node{
+	node_type:    2,
+	branch_value: [17]string{},
+	flag_value: Flag_value{
+	encoded_prefix: compact_encode(append(path, 16)),
+	value:          value,
+		},
+	}
+}
+	
+/* IsBranch
+* 
+* To check if node is Branch node
+*@ input: node *Node
+*@ output: bool
+*/
+func (node *Node) IsBranch() bool {
+	return node.node_type == 1
+}
+
+
+
 /* hash_node
 * 
 * To convert node as hashNode (HashValue)
 *@ input: node *Node
-*@ output: str string
- */
+*@ output: errorMessage string
+*/
  func (node *Node) hash_node() string {
 	var str string
 	switch node.node_type {
@@ -594,6 +622,17 @@ func (mpt *MerklePatriciaTrie) GetRootNode() {
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
 }
 
+/* CheckState
+* 
+* To Control state and print error message
+*@ input: isStateOk bool, errorMessage string
+*@ output: str string
+ */
+func CheckState(isStateOk bool, errorMessage string) {
+	if !isStateOk {
+		panic(errorMessage)
+	}
+}
 
 /*-------------------------TEST---------------------------------------------------*/
 /* To Test the project (Functions and Subfunction)

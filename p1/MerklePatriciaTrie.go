@@ -12,6 +12,7 @@ import (
 /*-------------------------STRUCT---------------------------------------------------*/
 /* Struct data structure for variables
 /*-------------------------STRUCT---------------------------------------------------*/
+
 type stack []Node
 
 type Flag_value struct {
@@ -35,16 +36,45 @@ type MerklePatriciaTrie struct {
 /*-------------------------SERVICE---------------------------------------------------*/
 
 
-func HexConverter(key string) []uint8 {
-	var hex_array []uint8
 
-	for i := 0; i < len(key); i++ {
-		hex_array = append(hex_array, key[i]/16)
-		hex_array = append(hex_array, key[i]%16)
+/* compact_decode
+* To reverse compact encode value
+*@ input: encoded_arr []uint8
+*@ output: decoded_arr []uint8
+*/
+func compact_decode(encoded_arr []uint8) []uint8 {
+
+	var decoded_arr []uint8
+	if len(encoded_arr) == 0 {
+		fmt.Println("Invalid input data for Compact_decode")
+		return decoded_arr
 	}
-	return hex_array
+	for i := 0; i < len(encoded_arr); i += 1 {
+		decoded_arr = append(decoded_arr, encoded_arr[i]/16)
+		decoded_arr = append(decoded_arr, encoded_arr[i]%16)
+	}
+
+	switch decoded_arr[0] {
+	case 0:
+		decoded_arr = decoded_arr[2:len(decoded_arr)]
+	case 1:
+		decoded_arr = decoded_arr[1:len(decoded_arr)]
+	case 2:
+		decoded_arr = decoded_arr[2:len(decoded_arr)]
+	case 3:
+		decoded_arr = decoded_arr[1:len(decoded_arr)]
+	default:
+		fmt.Println("FATAL: Invalid prefix for Compac_decoder function!")
+	}
+	return decoded_arr
 }
 
+
+/* compact_encode
+* To encode hex Key
+*@ input: hex_array []uint8 
+*@ output: result []uint8
+*/
 func compact_encode(hex_array []uint8) []uint8 {
 
 	var term = 0
@@ -73,6 +103,11 @@ func compact_encode(hex_array []uint8) []uint8 {
 	return result
 }
 
+/* GetNodeType
+* To decide on Extension and Leaf type
+*@ input: node Node
+*@ output: nodeType uint8
+*/
 func GetNodeType(node Node) uint8 {
 
 	var nodeType uint8
@@ -81,44 +116,47 @@ func GetNodeType(node Node) uint8 {
 	return nodeType
 }
 
-func compact_decode(encoded_arr []uint8) []uint8 {
+/* HexConverter
+* To convert key into Hex value
+*@ input: Key string
+*@ output: hex_array []uint8
+*/
+func HexConverter(key string) []uint8 {
+	var hex_array []uint8
 
-	var decoded_arr []uint8
-	if len(encoded_arr) == 0 {
-		fmt.Println("Invalid input data for Compact_decode")
-		return decoded_arr
+	for i := 0; i < len(key); i++ {
+		hex_array = append(hex_array, key[i]/16)
+		hex_array = append(hex_array, key[i]%16)
 	}
-	for i := 0; i < len(encoded_arr); i += 1 {
-		decoded_arr = append(decoded_arr, encoded_arr[i]/16)
-		decoded_arr = append(decoded_arr, encoded_arr[i]%16)
-	}
-
-	switch decoded_arr[0] {
-	case 0:
-		decoded_arr = decoded_arr[2:len(decoded_arr)]
-	case 1:
-		decoded_arr = decoded_arr[1:len(decoded_arr)]
-	case 2:
-		decoded_arr = decoded_arr[2:len(decoded_arr)]
-	case 3:
-		decoded_arr = decoded_arr[1:len(decoded_arr)]
-	default:
-		fmt.Println("FATAL: Invalid prefix for Compac_decoder function!")
-	}
-	return decoded_arr
+	return hex_array
 }
 
+/* InitializeMpt
+* To initialize mpt
+*@ input: None
+*@ output: pointerto tree
+*/
 func InitializeMpt() *MerklePatriciaTrie {
 	db := make(map[string]Node)
 	root := ""
 	return &MerklePatriciaTrie{db, root}
 }
 
+/* InitializeStack
+* To initialize stack
+*@ input: None
+*@ output: s stack
+*/
 func InitializeStack() stack {
 	s := make(stack, 0)
 	return s
 }
 
+/* InitializeStack
+* To initialize stack
+*@ input: None
+*@ output: s stack
+*/
 func (s stack) Push(v Node) stack {
 	return append(s, v)
 }

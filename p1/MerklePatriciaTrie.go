@@ -9,6 +9,9 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+/*-------------------------STRUCT---------------------------------------------------*/
+/* Struct data structure for variables
+/*-------------------------STRUCT---------------------------------------------------*/
 type stack []Node
 
 type Flag_value struct {
@@ -27,6 +30,11 @@ type MerklePatriciaTrie struct {
 	root string
 }
 
+/*-------------------------SERVICE---------------------------------------------------*/
+/* Service functions act as helper function to others master functions
+/*-------------------------SERVICE---------------------------------------------------*/
+
+
 func HexConverter(key string) []uint8 {
 	var hex_array []uint8
 
@@ -37,7 +45,7 @@ func HexConverter(key string) []uint8 {
 	return hex_array
 }
 
-func Compact_encode(hex_array []uint8) []uint8 {
+func compact_encode(hex_array []uint8) []uint8 {
 
 	var term = 0
 	var result []uint8
@@ -73,7 +81,7 @@ func GetNodeType(node Node) uint8 {
 	return nodeType
 }
 
-func Compact_decode(encoded_arr []uint8) []uint8 {
+func compact_decode(encoded_arr []uint8) []uint8 {
 
 	var decoded_arr []uint8
 	if len(encoded_arr) == 0 {
@@ -232,7 +240,7 @@ func (mpt *MerklePatriciaTrie) GetToDelete(key string) (string, error, stack) {
 }
 
 func FindLeafValue(node Node, searchPath []uint8) (string, error, []uint8) {
-	currentPath := Compact_decode(node.flag_value.encoded_prefix)
+	currentPath := compact_decode(node.flag_value.encoded_prefix)
 	matchedIndex, remainPath := EqualArray(currentPath, searchPath)
 	// if whole match, return Leaf Node Value
 	if matchedIndex+1 == len(currentPath) {
@@ -254,7 +262,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 
 	if node.node_type == 2 {
 		// Extension or Leaf
-		currentPath = Compact_decode(node.flag_value.encoded_prefix)
+		currentPath = compact_decode(node.flag_value.encoded_prefix)
 	} else if node.node_type == 1 {
 		// Branch
 		branchCurrentPath := node.branch_value
@@ -276,11 +284,14 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		return value, nil, remainPath, nodeType, nextBranchNode
 	}
 	// if whole match, if current Node is Branch
-	if node.branch_value[searchPath[0]] != ""  && node.node_type == 1 {//TODO
+	if node.branch_value[searchPath[0]] != ""  && node.node_type == 1 {
 			nextNode = mpt.db[node.branch_value[searchPath[0]]]
-		if nextNode.node_type == 2 {
+		if nextNode.node_type == 1 && len(searchPath) == 1{
+			value = nextNode.branch_value[16]
+		} else if nextNode.node_type == 2 {
 			value = nextNode.flag_value.value
 		}
+
 		return value, nil, remainPath, nodeType, nextNode
 	}
 	// if whole match path and remaining value
@@ -320,7 +331,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint
 
 	if node.node_type == 2 {
 		// Extension or Leaf
-		currentPath = Compact_decode(node.flag_value.encoded_prefix)
+		currentPath = compact_decode(node.flag_value.encoded_prefix)
 	} else if node.node_type == 1 {
 		// Branch
 		branchCurrentPath := node.branch_value
@@ -380,6 +391,11 @@ func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint
 	return "", nil, remainPath, nodeType, nextNode, s
 }
 
+func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
+	// TODO
+}
+
+
 func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 	var value string
 
@@ -408,7 +424,7 @@ func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack)
 		hex_array := HexConverter(key)
 		hex_array = append(hex_array, 16)
 		flagValue := Flag_value{
-			encoded_prefix: Compact_encode(hex_array),
+			encoded_prefix: compact_encode(hex_array),
 			value:          new_value,
 		}
 
@@ -417,7 +433,7 @@ func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack)
 			flag_value: flagValue,
 		}
 
-		hashedNode := newNode.Hash_node()
+		hashedNode := newNode.hash_node()
 		mpt.db[hashedNode] = newNode
 		mpt.root = hashedNode
 		return
@@ -425,11 +441,7 @@ func (mpt *MerklePatriciaTrie) InsertRoot(key string, new_value string, s stack)
 
 }
 
-func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
-
-}
-
-func (node *Node) Hash_node() string {
+func (node *Node) hash_node() string {
 	var str string
 	switch node.node_type {
 	case 0:
@@ -455,26 +467,51 @@ func (mpt *MerklePatriciaTrie) GetRootNode() {
 	fmt.Println("Value: ", root.flag_value.value)
 }
 func Test_compact_encode() {
-	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
-	fmt.Println(reflect.DeepEqual(Compact_decode(Compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
 }
 
+func Test_Insert_Get() {
+	mpt := InitializeMpt()
+	mpt.Insert("a","apple")
+	mpt.Insert("ab","banana")
+	mpt.Insert("acb","horse")
+	mpt.Insert("bfge","Dog")
+	mpt.Insert("c","Doggy")
+	mpt.Insert("r","Lucy")
+	value1, _ := mpt.Get("a")
+	value2, _ := mpt.Get("ab")
+	value3, _ := mpt.Get("acb")
+	value4, _ := mpt.Get("bfge")
+	value5, _ := mpt.Get("c")
+	value6, _ := mpt.Get("r")
+
+
+	fmt.Println(reflect.DeepEqual("apple", value1))
+	fmt.Println(reflect.DeepEqual("banana", value2))
+	fmt.Println(reflect.DeepEqual("horse", value3))
+	fmt.Println(reflect.DeepEqual("Dog", value4))
+	fmt.Println(reflect.DeepEqual("Doggy", value5))
+	fmt.Println(reflect.DeepEqual("Lucy", value6))
+}
+
+/* Test : Create Dummy Map  */
 func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	mpt.db = make(map[string]Node)
 
 	/*---------- G ------------------ */
 	// 0: Null, 1: Branch, 2: Ext or Leaf
 	flagValueNodeG := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{5, 16}),
+		encoded_prefix: compact_encode([]uint8{5, 16}),
 		value:          "coin",
 	}
 	nodeG := Node{
 		node_type:  2, //Leaf
 		flag_value: flagValueNodeG,
 	}
-	hashNodeG := nodeG.Hash_node()
+	hashNodeG := nodeG.hash_node()
 	mpt.db[hashNodeG] = nodeG
 
 	/*---------- F ------------------ */
@@ -487,18 +524,18 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 		flag_value:   flagValueNodeF,
 		branch_value: [17]string{"", "", "", "", "", "", hashNodeG, "", "", "", "", "", "", "", "", "", "puppy"},
 	}
-	hashNodeF := nodeF.Hash_node()
+	hashNodeF := nodeF.hash_node()
 	mpt.db[hashNodeF] = nodeF
 	/*---------- E ------------------ */
 	flagValueNodeE := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{7}),
+		encoded_prefix: compact_encode([]uint8{7}),
 		value:          hashNodeF,
 	}
 	nodeE := Node{
 		node_type:  2, //Extension
 		flag_value: flagValueNodeE,
 	}
-	hashNodeE := nodeE.Hash_node()
+	hashNodeE := nodeE.hash_node()
 	mpt.db[hashNodeE] = nodeE
 	/*---------- J ------------------ */
 	flagValueNodeJ := Flag_value{
@@ -509,7 +546,7 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 		node_type:  2, //Extension
 		flag_value: flagValueNodeJ,
 	}
-	hashNodeJ := nodeJ.Hash_node()
+	hashNodeJ := nodeJ.hash_node()
 	mpt.db[hashNodeJ] = nodeJ
 	/*---------- H ------------------ */
 	flagValueNodeH := Flag_value{
@@ -521,7 +558,7 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 		flag_value:   flagValueNodeH,
 		branch_value: [17]string{"", "", hashNodeJ, "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
 	}
-	hashNodeH := nodeH.Hash_node()
+	hashNodeH := nodeH.hash_node()
 	mpt.db[hashNodeH] = nodeH
 	/*---------- D ------------------ */
 	flagValueNodeD := Flag_value{
@@ -533,30 +570,30 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 		flag_value:   flagValueNodeD,
 		branch_value: [17]string{"", "", hashNodeH, "", "", "", hashNodeE, "", "", "", "", "", "", "", "", "", "verb"},
 	}
-	hashNodeD := nodeD.Hash_node()
+	hashNodeD := nodeD.hash_node()
 	mpt.db[hashNodeD] = nodeD
 
 	/*---------- B ------------------ */
 	flagValueNodeB := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{6, 15}),
+		encoded_prefix: compact_encode([]uint8{6, 15}),
 		value:          hashNodeD,
 	}
 	nodeB := Node{
 		node_type:  2, //Extension
 		flag_value: flagValueNodeB,
 	}
-	hashNodeB := nodeB.Hash_node()
+	hashNodeB := nodeB.hash_node()
 	mpt.db[hashNodeB] = nodeB
 	/*---------- C ------------------ */
 	flagValueNodeC := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{6, 15, 7, 2, 7, 3, 6, 5, 16}),
+		encoded_prefix: compact_encode([]uint8{6, 15, 7, 2, 7, 3, 6, 5, 16}),
 		value:          "stallion",
 	}
 	nodeC := Node{
 		node_type:  2, //Leaf
 		flag_value: flagValueNodeC,
 	}
-	hashNodeC := nodeC.Hash_node()
+	hashNodeC := nodeC.hash_node()
 	mpt.db[hashNodeC] = nodeC
 	/*---------- A ------------------ */
 	flagValueNodeA := Flag_value{
@@ -568,47 +605,46 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 		flag_value:   flagValueNodeA,
 		branch_value: [17]string{"", "", "", "", hashNodeB, "", "", "", hashNodeC, "", "", "", "", "", "", "", ""},
 	}
-	hashNodeA := nodeA.Hash_node()
+	hashNodeA := nodeA.hash_node()
 	mpt.db[hashNodeA] = nodeA
 
 	/*---------- Root  ------------------ */
 	flagValueRoot := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{6}),
+		encoded_prefix: compact_encode([]uint8{6}),
 		value:          hashNodeA,
 	}
 	nodeRoot := Node{
 		node_type:  2, //Extension Root
 		flag_value: flagValueRoot,
 	}
-	hashNodeRoot := nodeRoot.Hash_node()
+	hashNodeRoot := nodeRoot.hash_node()
 	mpt.db[hashNodeRoot] = nodeRoot
 	mpt.root = hashNodeRoot
 	return errors.New("Problem occured while creating Root Node")
 }
-
 func (mpt *MerklePatriciaTrie) CreateTestMpt3() error {
 	mpt.db = make(map[string]Node)
 
 	flagValueNodeC := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{2}),
+		encoded_prefix: compact_encode([]uint8{2}),
 		value:          "pie",
 	}
 	nodeC := Node{
 		node_type:  2, //Leaf
 		flag_value: flagValueNodeC,
 	}
-	hashNodeC := nodeC.Hash_node()
+	hashNodeC := nodeC.hash_node()
 	mpt.db[hashNodeC] = nodeC
 
 	flagValueNodeB := Flag_value{
-		encoded_prefix: Compact_encode([]uint8{1}),
+		encoded_prefix: compact_encode([]uint8{1}),
 		value:          "apple",
 	}
 	nodeB := Node{
 		node_type:  2, //Leaf
 		flag_value: flagValueNodeB,
 	}
-	hashNodeB := nodeB.Hash_node()
+	hashNodeB := nodeB.hash_node()
 	mpt.db[hashNodeB] = nodeB
 
 	flagValueNodeRootA := Flag_value{
@@ -621,8 +657,43 @@ func (mpt *MerklePatriciaTrie) CreateTestMpt3() error {
 		branch_value: [17]string{"", "", "", "", "", "", hashNodeB, hashNodeC, "", "", "", "", "", "", "", "", ""},
 	}
 
-	hashNodeRootA := nodeRootA.Hash_node()
+	hashNodeRootA := nodeRootA.hash_node()
 	mpt.db[hashNodeRootA] = nodeRootA
 	mpt.root = hashNodeRootA
 	return errors.New("Problem occured while creating Root Node")
 }
+
+/* Test: Test Get Function */
+func (mpt *MerklePatriciaTrie) Test_Get(){
+	mpt = InitializeMpt()
+	mpt.CreateTestMpt()
+	
+	value1, _ := mpt.Get("do")
+	value2, _ := mpt.Get("dog")
+	value3, _ := mpt.Get("doge")
+	value4, _ := mpt.Get("horse")
+	value5, _ := mpt.Get("do\"")
+	value6, _ := mpt.Get("")
+	
+	fmt.Println(reflect.DeepEqual("verb", value1))
+	fmt.Println(reflect.DeepEqual("puppy", value2))
+	fmt.Println(reflect.DeepEqual("coin", value3))
+	fmt.Println(reflect.DeepEqual("stallion", value4))
+	fmt.Println(reflect.DeepEqual("book", value5))
+	fmt.Println(reflect.DeepEqual("", value6))
+
+	mpt = InitializeMpt()
+	mpt.CreateTestMpt3()
+	
+	value7, _ := mpt.Get("r")
+	value8, _ := mpt.Get("a")
+
+	fmt.Println(reflect.DeepEqual("pie", value7))
+	fmt.Println(reflect.DeepEqual("apple", value8))
+}
+	
+
+
+
+
+

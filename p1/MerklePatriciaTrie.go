@@ -985,18 +985,26 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 	// check for remaining path
 	remainingPath := path[len(matchPrefix):]
 	// Generate newBranch node with ref to other Leaf/Ext 
-	newBranchNode := CreateBranch("")
+	newBranch := CreateBranch("")
 	if node.IsLeaf() {
 		if len(remainingNodePath) == 0 {
-			newBranchNode.branch_value[16] = node.flag_value.value
+			newBranch.branch_value[16] = node.flag_value.value
 		} else {
-			newLeafNode := CreateLeaf(remainingNodePath[1:], node.flag_value.value)
-			newLeafNodeHash := newLeafNode.hash_node()
-			mpt.db[newLeafNodeHash] = newLeafNode
-			newBranchNode.branch_value[remainingNodePath[0]] = newLeafNodeHash
+			newLeaf := CreateLeaf(remainingNodePath[1:], node.flag_value.value)
+			newLeafHash := newLeaf.hash_node()
+			mpt.db[newLeafHash] = newLeaf
+			newBranch.branch_value[remainingNodePath[0]] = newLeafHash
 		}
 	} else {
-   //TODO
+		// if one path left create new Branch 
+		if len(remainingNodePath) == 1 {
+			newBranch.branch_value[remainingNodePath[0]] = node.flag_value.value
+		} else {
+			newExtension := CreateExtension(remainingNodePath[1:], node.flag_value.value)
+			newExtensionHash := newExtension.hash_node()
+			mpt.db[newExtensionHash] = newExtension
+			newBranch.branch_value[remainingNodePath[0]] = newExtensionHash
+		}
 	}
 
 

@@ -986,7 +986,18 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 	remainingPath := path[len(matchPrefix):]
 	// Generate newBranch node with ref to other Leaf/Ext 
 	newBranchNode := CreateBranch("")
-
+	if node.IsLeaf() {
+		if len(remainingNodePath) == 0 {
+			newBranchNode.branch_value[16] = node.flag_value.value
+		} else {
+			newLeafNode := CreateLeaf(remainingNodePath[1:], node.flag_value.value)
+			newLeafNodeHash := newLeafNode.hash_node()
+			mpt.db[newLeafNodeHash] = newLeafNode
+			newBranchNode.branch_value[remainingNodePath[0]] = newLeafNodeHash
+		}
+	} else {
+   //TODO
+	}
 
 
 }

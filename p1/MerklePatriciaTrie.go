@@ -43,10 +43,11 @@ const NoChild = uint8(60)
 func compact_decode(encoded_arr []uint8) []uint8 {
 
 	var decoded_arr []uint8
-	if len(encoded_arr) == 0 {
+	if (encoded_arr == nil) || (len(encoded_arr) == 0) {
 		fmt.Println("Invalid input data for Compact_decode")
-		return decoded_arr
+		return nil
 	}
+
 	for i := 0; i < len(encoded_arr); i += 1 {
 		decoded_arr = append(decoded_arr, encoded_arr[i]/16)
 		decoded_arr = append(decoded_arr, encoded_arr[i]%16)
@@ -73,7 +74,10 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 *@ output: result []uint8
  */
 func compact_encode(hex_array []uint8) []uint8 {
-
+	if (hex_array == nil) || (len(hex_array) == 0) {
+		fmt.Println("Invalid input data for Compact_decode")
+		return nil
+	}
 	var term = 0
 	var result []uint8
 	if len(hex_array) == 0 {
@@ -1412,7 +1416,76 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 }
 
 
+func PrintTestKeyValues(mpt MerklePatriciaTrie) {
+	value_abc, _ := mpt.Get("key_abc")
+	value_bcd, _ := mpt.Get("key_bcd")
+	value_abcde, _ := mpt.Get("key_abcde")
+	value_bcdef, _ := mpt.Get("key_bcdef")
+	value_axyz, _ := mpt.Get("key_axyz")
+	value_a, _ := mpt.Get("key_a")
+	value_empty, _ := mpt.Get("")
+	fmt.Printf("key_abc -> %s, key_bcd -> %s, key_abcde -> %s, key_bcdef -> %s, key_axyz -> %s, key_a -> %s, <empty key> -> %s\n",
+		value_abc, value_bcd, value_abcde, value_bcdef, value_axyz, value_a, value_empty)
+}
 
+func TestAll() {
+	mpt := MerklePatriciaTrie{}
+	mpt.Initial()
+
+	fmt.Print("\n----- 1 -----\n")
+	PrintTestKeyValues(mpt)
+	// mpt.Print()
+
+	fmt.Print("\n----- 2 -----\n")
+	mpt.Insert("key_abc", "value_abc")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 3 -----\n")
+	mpt.Insert("key_bcd", "value_bcd")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 4 -----\n")
+	mpt.Insert("key_abcde", "value_abcde")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 5 -----\n")
+	mpt.Insert("key_bcdef", "value_bcdef")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 6 -----\n")
+	mpt.Insert("key_axyz", "value_axyz")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 7 -----\n")
+	mpt.Insert("key_a", "value_a")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 8 -----\n")
+	mpt.Insert("", "value_empty")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 9 -----\n")
+	mpt.Delete("key_abc")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 10 -----\n")
+	mpt.Delete("key_a")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+
+	fmt.Print("\n----- 11 -----\n")
+	mpt.Delete("key_bcdef")
+	// mpt.Print()
+	PrintTestKeyValues(mpt)
+}
 
 
 

@@ -927,7 +927,7 @@ func (node *Node) IsExtension() bool {
 * To convert node as hashNode (HashValue)
 *@ input: node *Node
 *@ output: errorMessage string
- */
+*/
 func (node *Node) hash_node() string {
 	var str string
 	switch node.node_type {
@@ -944,6 +944,23 @@ func (node *Node) hash_node() string {
 
 	sum := sha3.Sum256([]byte(str))
 	return "HashStart_" + hex.EncodeToString(sum[:]) + "_HashEnd"
+}
+
+/*-------------------------MERGE---------------------------------------------------*/
+/* To combine and merge nodes
+/*-------------------------MERGE---------------------------------------------------*/
+/* MergeExtension
+*
+* To merge 2 extention nodes
+*@ input: node *Node
+*@ output: Node
+ */
+func (node *Node) MergeExtension(child Node) Node {
+	if child.IsExtension() {
+		return CreateExtension(append(compact_decode(node.flag_value.encoded_prefix),compact_decode(child.flag_value.encoded_prefix)...),child.flag_value.value)
+	}
+	return CreateLeaf(
+		append(compact_decode(node.flag_value.encoded_prefix), compact_decode(child.flag_value.encoded_prefix)...),child.flag_value.value)
 }
 
 /*-------------------------TEST---------------------------------------------------*/

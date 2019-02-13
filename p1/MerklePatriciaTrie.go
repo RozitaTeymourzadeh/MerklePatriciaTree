@@ -335,9 +335,13 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 				// Root is Ext or Leaf
 				newRootNode := mpt.MergeLeafExt(rootNode, path, new_value)
 				mpt.root = newRootNode.hash_node()
-			}
+			} 
 		}
-	} 
+	} else if mpt.root == "" {
+		rootNode := NewLeafNodeWithValue(path, new_value)
+		mpt.root = rootNode.hash_node()
+		mpt.db[mpt.root] = rootNode
+	}
 }
 
 /* Delete

@@ -818,8 +818,6 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 	}
 }
 
-
-
 /*-------------------------NODE HELPER---------------------------------------------------*/
 /* Node accessories
 /*-------------------------NODE HELPER---------------------------------------------------*/
@@ -854,6 +852,20 @@ func CreateExtension(path []uint8, hash string) Node {
 	}
 }
 
+/* CreateBranch
+* To Create Branch
+*@ input: value string
+*@ output: Node
+*/
+func CreateBranch(value string) Node {
+	branch_value := [17]string{}
+	branch_value[16] = value
+	return Node{
+		node_type:    1,
+		branch_value: branch_value,
+		flag_value:   Flag_value{},
+	}
+}
 /* CreateLeaf
 * To Create Leaf
 *@ input: path []uint8, value string

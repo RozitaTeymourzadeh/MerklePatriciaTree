@@ -341,7 +341,23 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 		rootNode := NewLeafNodeWithValue(path, new_value)
 		mpt.root = rootNode.hash_node()
 		mpt.db[mpt.root] = rootNode
-	}
+	}else {
+		nodePath, remainingPath := mpt.GetNodePath(path, mpt.root)
+		if len(nodePath) == 0 {
+			rootNode := mpt.GetHashNode(mpt.root)
+			if rootNode.IsBranch() {
+				// Root is Branch node
+				childNode := NewLeafNodeWithValue(path[1:], new_value)
+				childHash := childNode.hash_node()
+				mpt.db[childHash] = childNode
+				rootNode.branch_value[path[0]] = childHash
+				delete(mpt.db, mpt.root)
+				mpt.root = rootNode.hash_node()
+				mpt.db[mpt.root] = rootNode
+			} else {
+				newRootNode := mpt.MergeLeafExt(rootNode, remainingPath, new_value)
+				mpt.root = newRootNode.hash_node()
+			}
 }
 
 /* Delete

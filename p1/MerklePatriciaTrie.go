@@ -728,6 +728,21 @@ func (mpt *MerklePatriciaTrie) GetNodePath(path []uint8, nodeHash string) ([]Nod
 	return []Node{node}, path
 }
 
+/* GetBranchIndex
+* To generate the branch index with value
+*@input:childHash string
+*@oututp:i uint8
+*/
+func (node *Node) GetBranchIndex(childHash string) uint8 {
+
+	for i := uint8(0); i < uint8(16); i++ {
+		if node.branch_value[i] == childHash {
+			return i
+		}
+	}
+	return NoChild
+}
+
 /*-------------------------NODE HELPER---------------------------------------------------*/
 /* Node accessories
 /*-------------------------NODE HELPER---------------------------------------------------*/
@@ -794,6 +809,15 @@ func (node *Node) IsLeaf() bool {
 	return (node.node_type == 2) && (node.flag_value.encoded_prefix[0]>>5 == 1)
 }
 
+/* IsExtension
+* To check for extention node
+*@input:node *Node
+*@oututp:bool
+*/
+func (node *Node) IsExtension() bool {
+	return (node.node_type == 2) && (node.flag_value.encoded_prefix[0]>>5 == 0)
+}
+
 /* hash_node
 *
 * To convert node as hashNode (HashValue)
@@ -825,7 +849,7 @@ func (node *Node) hash_node() string {
 /* CreateTestMpt
 *
 * To create dummy Mpt
- */
+*/
 func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
 	mpt.db = make(map[string]Node)
 
@@ -1175,3 +1199,17 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	}
 	return rs
 }
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+

@@ -1006,8 +1006,24 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 			newBranch.branch_value[remainingNodePath[0]] = newExtensionHash
 		}
 	}
-
-
+  // Create new node and add to tree
+	if len(remainingPath) == 0 {
+		newBranch.branch_value[16] = new_value
+	} else {
+		newLeaf := CreateLeaf(remainingPath[1:], new_value)
+		newLeafHash := newLeaf.hash_node()
+		mpt.db[newLeafHash] = newLeaf
+		newBranchNode.branch_value[remainingPath[0]] = newLeafHash
+	}
+	newBranchHash := newBranch.hash_node()
+	mpt.db[newBranchHash] = newBranch
+	if len(matchPrefix) > 0 {
+		newExtension := CreateExtension(matchPrefix, newBranchHash)
+		mpt.db[newExtension.hash_node()] = newExtension
+		return newExtension
+	} else {
+		return newBranch
+	}
 }
 
 /*-------------------------TEST---------------------------------------------------*/
@@ -1285,7 +1301,9 @@ func (mpt *MerklePatriciaTrie) Test_Get() {
 	fmt.Println(reflect.DeepEqual("apple", value8))
 }
 
-
+/* String
+* To support node printing
+*/
 func (node *Node) String() string {
 	str := "empty string"
 	switch node.node_type {
@@ -1309,23 +1327,38 @@ func (node *Node) String() string {
 	return str
 }
 
+/* node_to_string
+* To Convert node to string
+*/
 func node_to_string(node Node) string {
 	return node.String()
 }
 
+/* Initial
+* To Intialize the trie
+*/
 func (mpt *MerklePatriciaTrie) Initial() {
 	mpt.root = ""
 	mpt.db = make(map[string]Node)
 }
 
+/* is_ext_node
+* To check for extension Node
+*/
 func is_ext_node(encoded_arr []uint8) bool {
 	return encoded_arr[0] / 16 < 2
 }
 
+/* TestCompact
+* To test compact_encode
+*/
 func TestCompact() {
 	test_compact_encode()
 }
 
+/* String
+* To print node content
+*/
 func (mpt *MerklePatriciaTrie) String() string {
 	content := fmt.Sprintf("ROOT=%s\n", mpt.root)
 	for hash := range mpt.db {
@@ -1334,6 +1367,9 @@ func (mpt *MerklePatriciaTrie) String() string {
 	return content
 }
 
+/* Order_nodes
+* To order nodes
+*/
 func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	raw_content := mpt.String()
 	content := strings.Split(raw_content, "\n")

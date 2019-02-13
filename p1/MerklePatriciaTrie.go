@@ -762,7 +762,7 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 	if len(node) == 0 {
 		return
 	}
- //MPT is not balanced... Node is connected in a wrong way
+ 	//MPT is not balanced... Node is connected in a wrong way
 	lastNode := node[len(node)-1]
 	numBranches := 0
 	remainingChildIndex := NoChild
@@ -774,7 +774,6 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 	}
 	// Branch Node misplaced, calculate Hash value only
 	if numBranches > 1 {
-
 		mpt.UpdateHashValues(node, branchToDelete, "")
 	} else {
 		delete(mpt.db, lastNode.hash_node())
@@ -791,8 +790,34 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 				delete(mpt.db, childNode.hash_node())
 			}
 		}
+		// if no parent, modifiedNode is root
+		if len(node) == 1 {
+			mpt.root = modifiedNode.hash_node()
+			mpt.db[mpt.root] = modifiedNode
+		} else {
+			parentNode := node[len(node)-2]
+			if parentNode.IsBranch() {
+				modifiedNodeHash := modifiedNode.hash_node()
+				mpt.db[modifiedNodeHash] = modifiedNode
+				mpt.UpdateHashValues(node[:len(node)-1],parentNode.GetBranchIndex(lastNode.hash_node(),modifiedNodeHash)
+			} else {
+				// Merge Node
+				parentNodeHash := parentNode.hash_node()
+				delete(mpt.db, parentNodeHash)
+				modifiedNode = parentNode.MergeExtension(modifiedNode)
+				modifiedNodeHash := modifiedNode.hash_node()
+				mpt.db[modifiedNodeHash] = modifiedNode
+				if len(node) == 2 {
+					mpt.root = modifiedNodeHash
+				} else {
+					grandParentNode := node[len(node)-3]
+					mpt.UpdateHashValues(node[:len(node)-2],grandParentNode.GetBranchIndex(parentNodeHash),modifiedNodeHash)
+				}
+			}
+		}
 	}
 }
+
 
 
 /*-------------------------NODE HELPER---------------------------------------------------*/

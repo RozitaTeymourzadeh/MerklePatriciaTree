@@ -979,6 +979,13 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 		mpt.db[node.hash_node()] = node
 		return node
 	}
+	//find match path again
+	matchPrefix := GetMatchPrefix(nodePath, path)
+	remainingNodePath := nodePath[len(matchPrefix):]
+	// check for remaining path
+	remainingPath := path[len(matchPrefix):]
+	// Generate newBranch node with ref to other Leaf/Ext 
+	newBranchNode := CreateBranch("")
 
 
 

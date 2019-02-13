@@ -339,7 +339,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 	if len(path) == 0 {
 		if mpt.root == "" {
 			//Empty MPT
-			rootNode := NewLeafNodeWithValue(path, new_value)
+			rootNode := CreateLeaf(path, new_value)
 			mpt.root = rootNode.hash_node()
 			mpt.db[mpt.root] = rootNode
 		} else {
@@ -357,7 +357,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 			} 
 		}
 	} else if mpt.root == "" {
-		rootNode := NewLeafNodeWithValue(path, new_value)
+		rootNode := CreateLeaf(path, new_value)
 		mpt.root = rootNode.hash_node()
 		mpt.db[mpt.root] = rootNode
 	} else {
@@ -366,7 +366,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 			rootNode := mpt.GetHashNode(mpt.root)
 			if rootNode.IsBranch() {
 				// Root is Branch node
-				childNode := NewLeafNodeWithValue(path[1:], new_value)
+				childNode := CreateLeaf(path[1:], new_value)
 				childHash := childNode.hash_node()
 				mpt.db[childHash] = childNode
 				rootNode.branch_value[path[0]] = childHash
@@ -378,34 +378,33 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 				mpt.root = newRootNode.hash_node()
 			} 
 		} else {
-				lastPrefixNode := nodePath[len(nodePath)-1]
-				if lastPrefixNode.IsBranch() {
-					if len(remainingPath) == 0 {
+			lastPrefixNode := nodePath[len(nodePath)-1]
+			if lastPrefixNode.IsBranch() {
+				if len(remainingPath) == 0 {
 						mpt.UpdateHashValues(nodePath, 16, new_value)
-					} else if lastPrefixNode.branch_value[remainingPath[0]] == "" {
+				} else if lastPrefixNode.branch_value[remainingPath[0]] == "" {
 						//Branch Node in Leaf
-						newLeafNode := NewLeafNodeWithValue(remainingPath[1:], new_value)
+						newLeafNode := CreateLeaf(remainingPath[1:], new_value)
 						newLeafNodeHash := newLeafNode.hash_node()
 						mpt.db[newLeafNodeHash] = newLeafNode
 						mpt.UpdateHashValues(nodePath, remainingPath[0], newLeafNodeHash)
-					} else {
+				} else {
 						// Find branch and child
 						childNode := mpt.GetHashNode(lastPrefixNode.branch_value[remainingPath[0]])
 						newChildNode := mpt.MergeLeafExt(childNode, remainingPath[1:], new_value)
 						mpt.UpdateHashValues(nodePath, remainingPath[0], newChildNode.hash_node())
-					}
-				} else {
-					lastPrefixNodeHash := lastPrefixNode.hash_node()
-					newLastPrefixNode := mpt.MergeLeafExt(lastPrefixNode,append(compact_decode(lastPrefixNode.flag_value.encoded_prefix), remainingPath...),
-						new_value)
-					if len(nodePath) == 1 {
-						mpt.root = newLastPrefixNode.hash_node()
-					} else {
-						parentNode := nodePath[len(nodePath)-2]
-						childIndex := parentNode.GetBranchIndex(lastPrefixNodeHash)
-						mpt.UpdateHashValues(nodePath[:len(nodePath)-1], childIndex, newLastPrefixNode.hash_node())
-					}
 				}
+			} else {
+				lastPrefixNodeHash := lastPrefixNode.hash_node()
+				newLastPrefixNode := mpt.MergeLeafExt(lastPrefixNode,append(compact_decode(lastPrefixNode.flag_value.encoded_prefix), remainingPath...),new_value)
+				if len(nodePath) == 1 {
+						mpt.root = newLastPrefixNode.hash_node()
+				} else {
+					parentNode := nodePath[len(nodePath)-2]
+					childIndex := parentNode.GetBranchIndex(lastPrefixNodeHash)
+					mpt.UpdateHashValues(nodePath[:len(nodePath)-1], childIndex, newLastPrefixNode.hash_node())
+				}
+			}
 		}
 	}
 }
@@ -762,6 +761,53 @@ func (node *Node) GetBranchIndex(childHash string) uint8 {
 	return NoChild
 }
 
+/*-------------------------TRIE HELPER---------------------------------------------------*/
+/* Trie accessories
+/*-------------------------TRIE HELPER---------------------------------------------------*/
+
+/* UpdateTrie
+* To balance Trie after delete and insertion
+*@input:node []Node, branchToDelete uint8
+*@oututp:None
+*/
+func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
+
+	if len(node) == 0 {
+		return
+	}
+ //MPT is not balanced... Node is connected in a wrong way
+	lastNode := node[len(node)-1]
+	numBranches := 0
+	remainingChildIndex := NoChild
+	for i := uint8(0); i < uint8(len(lastNode.branch_value)); i++ {
+		if (i != branchToDelete) && (len(lastNode.branch_value[i]) > 0) {
+			remainingChildIndex = i
+			numBranches++
+		}
+	}
+	// Branch Node misplaced, calculate Hash value only
+	if numBranches > 1 {
+
+		mpt.UpdateHashValues(node, branchToDelete, "")
+	} else {
+		delete(mpt.db, lastNode.hash_node())
+		var modifiedNode Node
+		if remainingChildIndex == 16 {
+			modifiedNode = CreateLeaf([]uint8{}, lastNode.branch_value[16])
+		} else {
+			modifiedNode = CreateExtension([]uint8{remainingChildIndex}, lastNode.branch_value[remainingChildIndex])
+		}
+		if modifiedNode.IsExtension() {
+			childNode := mpt.GetHashNode(modifiedNode.flag_value.value)
+			if childNode.IsExtension() || childNode.IsLeaf() {
+				modifiedNode = modifiedNode.MergeExtension(childNode)
+				delete(mpt.db, childNode.hash_node())
+			}
+		}
+	}
+}
+
+
 /*-------------------------NODE HELPER---------------------------------------------------*/
 /* Node accessories
 /*-------------------------NODE HELPER---------------------------------------------------*/
@@ -781,12 +827,12 @@ func (mpt *MerklePatriciaTrie) GetRootNode() {
 	fmt.Println("Value: ", root.flag_value.value)
 }
 
-/* NewLeafNodeWithValue
+/* CreateLeaf
 * To Print Root
 *@ input: path []uint8, value string
 *@ output: Node
  */
-func NewLeafNodeWithValue(path []uint8, value string) Node {
+func CreateLeaf(path []uint8, value string) Node {
 	return Node{
 		node_type:    2,
 		branch_value: [17]string{},

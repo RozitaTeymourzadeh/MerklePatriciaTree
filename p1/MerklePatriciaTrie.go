@@ -15,8 +15,6 @@ import (
 
 type stack []Node
 
-
-
 type Flag_value struct {
 	encoded_prefix []uint8
 	value          string
@@ -204,27 +202,48 @@ func EqualArray(a, b []uint8) (int, []uint8) {
 	return j, remainPath
 }
 
-/* PathsAreEqual
+/* IsEqualPath
 * To compare 2 path and return true if those are the same
 *@ input: path1 []uint8, path2 []uint8
 *@ output: bool
- */
-func PathsAreEqual(path1 []uint8, path2 []uint8) bool {
-	if path1 == nil {
-		return path2 == nil
+*/
+func IsEqualPath(pathA []uint8, pathB []uint8) bool {
+	if pathA == nil {
+		return pathB == nil
 	}
-	if path2 == nil {
+	if pathB == nil {
 		return false
 	}
-	if len(path1) != len(path2) {
+	if len(pathA) != len(pathB) {
 		return false
 	}
-	for i := 0; i < len(path1); i++ {
-		if path1[i] != path2[i] {
+	for i := 0; i < len(pathB); i++ {
+		if pathA[i] != pathB[i] {
 			return false
 		}
 	}
 	return true
+}
+
+/* GetMatchPrefix
+* To find match character in path
+*@ input: pathA []uint8, pathB []uint8
+*@ output: []uint8
+*/
+func GetMatchPrefix(pathA []uint8, pathB []uint8) []uint8 {
+	minLength := len(pathA)
+	if minLength > len(pathB) {
+		minLength = len(pathB)
+	}
+	matchPrefix := []uint8{}
+	for i := 0; i < minLength; i++ {
+		if pathA[i] == pathB[i] {
+			matchPrefix = append(matchPrefix, pathA[i])
+		} else {
+			break
+		}
+	}
+	return matchPrefix
 }
 
 func (mpt *MerklePatriciaTrie) UpdateHashValues(nodeChain []Node, child uint8, new_value string) {
@@ -1060,7 +1079,7 @@ func Test_Insert_Get_Delete() {
 	fmt.Println(reflect.DeepEqual("Doggy", value5))
 	fmt.Println(reflect.DeepEqual("Lucy", value6))
 
-	//fmt.Println(mpt)
+	
 	fmt.Println("-------------------Test_Get_Delete-------------------")
 	mpt.Delete("a")
 	mpt.Delete("ab")
@@ -1082,7 +1101,7 @@ func Test_Insert_Get_Delete() {
 	fmt.Println(reflect.DeepEqual("", value10))
 	fmt.Println(reflect.DeepEqual("", value11))
 	fmt.Println(reflect.DeepEqual("", value12))
-	//fmt.Println(mpt)
+	
 }
 
 /* Test_Get
@@ -1150,7 +1169,6 @@ func (mpt *MerklePatriciaTrie) Initial() {
 	mpt.db = make(map[string]Node)
 }
 
-
 func is_ext_node(encoded_arr []uint8) bool {
 	return encoded_arr[0] / 16 < 2
 }
@@ -1199,7 +1217,6 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	}
 	return rs
 }
-
 
 
 

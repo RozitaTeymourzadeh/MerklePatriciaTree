@@ -341,7 +341,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 		rootNode := NewLeafNodeWithValue(path, new_value)
 		mpt.root = rootNode.hash_node()
 		mpt.db[mpt.root] = rootNode
-	}else {
+	} else {
 		nodePath, remainingPath := mpt.GetNodePath(path, mpt.root)
 		if len(nodePath) == 0 {
 			rootNode := mpt.GetHashNode(mpt.root)
@@ -357,7 +357,38 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 			} else {
 				newRootNode := mpt.MergeLeafExt(rootNode, remainingPath, new_value)
 				mpt.root = newRootNode.hash_node()
-			}
+			} 
+		} else {
+				lastPrefixNode := nodePath[len(nodePath)-1]
+				if lastPrefixNode.IsBranch() {
+					if len(remainingPath) == 0 {
+						mpt.UpdateHashValues(nodePath, 16, new_value)
+					} else if lastPrefixNode.branch_value[remainingPath[0]] == "" {
+						//Branch Node in Leaf
+						newLeafNode := NewLeafNodeWithValue(remainingPath[1:], new_value)
+						newLeafNodeHash := newLeafNode.hash_node()
+						mpt.db[newLeafNodeHash] = newLeafNode
+						mpt.UpdateHashValues(nodePath, remainingPath[0], newLeafNodeHash)
+					} else {
+						// Find branch and child
+						childNode := mpt.GetHashNode(lastPrefixNode.branch_value[remainingPath[0]])
+						newChildNode := mpt.MergeLeafExt(childNode, remainingPath[1:], new_value)
+						mpt.UpdateHashValues(nodePath, remainingPath[0], newChildNode.hash_node())
+					}
+				} else {
+					lastPrefixNodeHash := lastPrefixNode.hash_node()
+					newLastPrefixNode := mpt.MergeLeafExt(lastPrefixNode,append(compact_decode(lastPrefixNode.flag_value.encoded_prefix), remainingPath...),
+						new_value)
+					if len(nodePath) == 1 {
+						mpt.root = newLastPrefixNode.hash_node()
+					} else {
+						parentNode := nodePath[len(nodePath)-2]
+						childIndex := parentNode.GetBranchIndex(lastPrefixNodeHash)
+						mpt.UpdateHashValues(nodePath[:len(nodePath)-1], childIndex, newLastPrefixNode.hash_node())
+					}
+				}
+		}
+	}
 }
 
 /* Delete

@@ -805,7 +805,7 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 			if parentNode.IsBranch() {
 				modifiedNodeHash := modifiedNode.hash_node()
 				mpt.db[modifiedNodeHash] = modifiedNode
-				mpt.UpdateHashValues(node[:len(node)-1],parentNode.GetBranchIndex(lastNode.hash_node(),modifiedNodeHash))
+				mpt.UpdateHashValues(node[:len(node)-1],parentNode.GetBranchIndex(lastNode.hash_node()),modifiedNodeHash)
 			} else {
 				// Merge Node
 				parentNodeHash := parentNode.hash_node()
@@ -1021,7 +1021,7 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 		newLeaf := CreateLeaf(remainingPath[1:], new_value)
 		newLeafHash := newLeaf.hash_node()
 		mpt.db[newLeafHash] = newLeaf
-		newBranchNode.branch_value[remainingPath[0]] = newLeafHash
+		newBranch.branch_value[remainingPath[0]] = newLeafHash
 	}
 	newBranchHash := newBranch.hash_node()
 	mpt.db[newBranchHash] = newBranch

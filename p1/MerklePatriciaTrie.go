@@ -668,8 +668,6 @@ func (mpt *MerklePatriciaTrie) FindLeafNodeToDelete(node Node, searchPath []uint
 	return "", nil, remainPath, nodeType, nextNode, s
 }
 
-
-
 /*-------------------------INSERT HELPER---------------------------------------------------*/
 /* SubFunction of Insert Master Function
 /*-------------------------INSERT HELPER---------------------------------------------------*/
@@ -892,7 +890,6 @@ func (mpt *MerklePatriciaTrie) GetHashNode(hash string) Node {
 	return n
 }
 
-
 /* IsBranch
 *
 * To check if node is Branch node
@@ -961,6 +958,30 @@ func (node *Node) MergeExtension(child Node) Node {
 	}
 	return CreateLeaf(
 		append(compact_decode(node.flag_value.encoded_prefix), compact_decode(child.flag_value.encoded_prefix)...),child.flag_value.value)
+}
+
+func (mpt *MerklePatriciaTrie) MergeLeafExt(
+	node Node, path []uint8, new_value string) Node {
+	nodePath := compact_decode(node.flag_value.encoded_prefix)
+	delete(mpt.db, node.hash_node())
+	if IsEqualPath(nodePath, path) {
+		// In Leaf, return node
+		if node.IsLeaf() {
+			node.flag_value.value = new_value
+			mpt.db[node.hash_node()] = node
+			return node
+		}
+		branchNode := mpt.GetHashNode(node.flag_value.value)
+		branchNode.branch_value[16] = new_value
+		branchNodeNewHash := branchNode.hash_node()
+		mpt.db[branchNodeNewHash] = branchNode
+		node.flag_value.value = branchNodeNewHash
+		mpt.db[node.hash_node()] = node
+		return node
+	}
+
+
+
 }
 
 /*-------------------------TEST---------------------------------------------------*/

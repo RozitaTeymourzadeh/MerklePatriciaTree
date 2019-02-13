@@ -113,6 +113,15 @@ func GetNodeType(node Node) uint8 {
 	return nodeType
 }
 
+/* IsPath
+* To check if path left
+*@ input: pathA []uint8, pathB []uint8
+*@ output: bool
+ */
+func IsPath(pathA []uint8, pathB []uint8) bool {
+	return len(GetMatchPrefix(pathA, pathB)) == len(pathA)
+}
+
 /* HexConverter
 * To convert key into Hex value
 *@ input: Key string
@@ -707,20 +716,19 @@ func (mpt *MerklePatriciaTrie) GetNodePath(path []uint8, nodeHash string) ([]Nod
 	node := mpt.GetHashNode(nodeHash)
 	if node.IsLeaf() {
 		nodePath := compact_decode(node.flag_value.encoded_prefix)
-		if IsPathPrefix(nodePath, path) {
+		if IsPath(nodePath, path) {
 			return []Node{node}, path[len(nodePath):]
 		}
 		return []Node{}, path
 	}
 	if node.IsExtension() {
 		extensionPath := compact_decode(node.flag_value.encoded_prefix)
-		if !IsPathPrefix(extensionPath, path) {
+		if !IsPath(extensionPath, path) {
 			return []Node{}, path
 		}
 		recNodePath, recRemainingPath := mpt.GetNodePath(path[len(extensionPath):], node.flag_value.value)
 		return append([]Node{node}, recNodePath...), recRemainingPath
 	}
-	// CheckState(node.IsBranch(), fmt.Sprintf("FATAL: Found node of unknown type"))
 	if (len(path) == 0) || (node.branch_value[path[0]] == "") {
 		return []Node{node}, path
 	}
@@ -797,7 +805,7 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 			if parentNode.IsBranch() {
 				modifiedNodeHash := modifiedNode.hash_node()
 				mpt.db[modifiedNodeHash] = modifiedNode
-				mpt.UpdateHashValues(node[:len(node)-1],parentNode.GetBranchIndex(lastNode.hash_node(),modifiedNodeHash)
+				mpt.UpdateHashValues(node[:len(node)-1],parentNode.GetBranchIndex(lastNode.hash_node(),modifiedNodeHash))
 			} else {
 				// Merge Node
 				parentNodeHash := parentNode.hash_node()

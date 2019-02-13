@@ -250,7 +250,6 @@ func (mpt *MerklePatriciaTrie) UpdateHashValues(nodeChain []Node, child uint8, n
 	if len(nodeChain) == 0 {
 		return
 	}
-
 	childrenIndexes := make([]uint8, len(nodeChain))
 	for i := 0; i < len(nodeChain)-1; i++ {
 		childrenIndexes[i] = NoChild
@@ -260,7 +259,6 @@ func (mpt *MerklePatriciaTrie) UpdateHashValues(nodeChain []Node, child uint8, n
 		}
 	}
 	childrenIndexes[len(childrenIndexes)-1] = child
-
 	newValue := new_value
 	for i := len(nodeChain) - 1; i >= 0; i-- {
 		node := nodeChain[i]
@@ -425,34 +423,23 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 
 	lastPathNode := &nodePath[len(nodePath)-1]
 	if lastPathNode.IsLeaf() {
-		// Delete the leaf, update the parent, and then rebalance the trie
-		// around the parent, if necessary.
 		lastPathNodeHashCode := lastPathNode.hash_node()
 		delete(mpt.db, lastPathNodeHashCode)
-
 		if len(nodePath) == 1 {
-			// We deleted the root node.
+			// Delete Root
 			mpt.root = ""
 		} else {
-			// Update the parent (it must be a branch node).
 			parentNode := nodePath[len(nodePath)-2]
-			// CheckState(parentNode.IsBranch(), fmt.Sprintf("FATAL: Find extension with Leaf child"))
-			mpt.RebalanceTriePath(nodePath[:len(nodePath)-1],
+			// Find extension with Leaf child
+			mpt.UpdateTrie(nodePath[:len(nodePath)-1],
 			parentNode.GetBranchIndex(lastPathNodeHashCode))
 		}
 		return "", nil
 	}
-
-	// CheckState(lastPathNode.IsBranch(),
-	// 	fmt.Sprintf("GetNodePath returned a path that does not end in a leaf or a branch: %v",
-	// 		nodePath))
 	if lastPathNode.branch_value[16] == "" {
-		// We found an exact path in the trie for the given key
-		// (because of the trie structure), but the key is not in the trie.
 		return "", errors.New("path_not_found")
 	}
-
-	mpt.RebalanceTriePath(nodePath, 16)
+	mpt.UpdateTrie(nodePath, 16)
 	return "", nil
 }
 
@@ -818,7 +805,6 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 *@ input: None
 *@ output: None
 */
-
 func (mpt *MerklePatriciaTrie) GetRootNode() {
 	root := mpt.db[mpt.root]
 	fmt.Println("Nodetype: ", root.node_type)
@@ -827,11 +813,27 @@ func (mpt *MerklePatriciaTrie) GetRootNode() {
 	fmt.Println("Value: ", root.flag_value.value)
 }
 
-/* CreateLeaf
-* To Print Root
+/* CreateExtension
+* To Create Extension
 *@ input: path []uint8, value string
 *@ output: Node
- */
+*/
+func CreateExtension(path []uint8, hash string) Node {
+	return Node{
+		node_type:    2,
+		branch_value: [17]string{},
+		flag_value: Flag_value{
+			encoded_prefix: compact_encode(path),
+			value:          hash,
+		},
+	}
+}
+
+/* CreateLeaf
+* To Create Leaf
+*@ input: path []uint8, value string
+*@ output: Node
+*/
 func CreateLeaf(path []uint8, value string) Node {
 	return Node{
 		node_type:    2,

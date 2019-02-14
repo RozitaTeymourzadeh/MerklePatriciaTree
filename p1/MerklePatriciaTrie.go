@@ -1,6 +1,7 @@
 package p1
 
 import (
+	//"MerklePatriciaTree/p1"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -521,9 +522,8 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		if nextNode.node_type == 1 && len(searchPath) == 1 {
 			value = nextNode.branch_value[16]
 		} else if nextNode.node_type == 2 {
-			value = nextNode.flag_value.value
+			nextNode = mpt.db[nextNode.flag_value.value]
 		}
-
 		return value, nil, remainPath, nodeType, nextNode
 	}
 	// if whole match path and remaining value
@@ -1313,6 +1313,18 @@ func (mpt *MerklePatriciaTrie) Test_Get() {
 	fmt.Println(reflect.DeepEqual("apple", value8))
 }
 
+// func Test_Get2() {
+// 	mpt := p1.InitializeMpt()
+// 	mpt.Insert("p", "apple")
+// 	mpt.Insert("aaa", "apple")
+// 	mpt.Insert("aap", "orange")
+// 	mpt.Insert("ba", "new")
+// 	v,_ := mpt.Get("aaa")
+// 	fmt.Println(mpt.Order_nodes())
+// 	fmt.Print(mpt)
+// 	fmt.Println(v)
+// }
+
 /* String
 * To support node printing
 */
@@ -1415,77 +1427,6 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	return rs
 }
 
-
-func PrintTestKeyValues(mpt MerklePatriciaTrie) {
-	value_abc, _ := mpt.Get("key_abc")
-	value_bcd, _ := mpt.Get("key_bcd")
-	value_abcde, _ := mpt.Get("key_abcde")
-	value_bcdef, _ := mpt.Get("key_bcdef")
-	value_axyz, _ := mpt.Get("key_axyz")
-	value_a, _ := mpt.Get("key_a")
-	value_empty, _ := mpt.Get("")
-	fmt.Printf("key_abc -> %s, key_bcd -> %s, key_abcde -> %s, key_bcdef -> %s, key_axyz -> %s, key_a -> %s, <empty key> -> %s\n",
-		value_abc, value_bcd, value_abcde, value_bcdef, value_axyz, value_a, value_empty)
-}
-
-func TestAll() {
-	mpt := MerklePatriciaTrie{}
-	mpt.Initial()
-
-	fmt.Print("\n----- 1 -----\n")
-	PrintTestKeyValues(mpt)
-	// mpt.Print()
-
-	fmt.Print("\n----- 2 -----\n")
-	mpt.Insert("key_abc", "value_abc")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 3 -----\n")
-	mpt.Insert("key_bcd", "value_bcd")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 4 -----\n")
-	mpt.Insert("key_abcde", "value_abcde")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 5 -----\n")
-	mpt.Insert("key_bcdef", "value_bcdef")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 6 -----\n")
-	mpt.Insert("key_axyz", "value_axyz")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 7 -----\n")
-	mpt.Insert("key_a", "value_a")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 8 -----\n")
-	mpt.Insert("", "value_empty")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 9 -----\n")
-	mpt.Delete("key_abc")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 10 -----\n")
-	mpt.Delete("key_a")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-
-	fmt.Print("\n----- 11 -----\n")
-	mpt.Delete("key_bcdef")
-	// mpt.Print()
-	PrintTestKeyValues(mpt)
-}
 
 
 

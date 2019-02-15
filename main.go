@@ -7,13 +7,11 @@ import (
 
 func main() {
 	fmt.Println("hello world!")
-	/* Initialize MPT */
-		mpt := p1.InitializeMpt()
 
  /* Test Cases */
 		  p1.TestCompact()
-		 	mpt.Test_Get()
-			p1.Test_Insert_Get_Delete()
-			p1.TestInsertDeleteGet3()
-			p1.TestInsertGet2()
+			p1.Test1_2()
+			p1.Test3_4()
+			p1.Test5()
+			p1.Test6()
 }

@@ -1138,180 +1138,6 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 /* To Test the project (Functions and Subfunction)
 /*-------------------------TEST---------------------------------------------------*/
 
-/* CreateTestMpt
-*
-* To create dummy Mpt
-*/
-func (mpt *MerklePatriciaTrie) CreateTestMpt() error {
-	mpt.db = make(map[string]Node)
-
-	/*---------- G ------------------ */
-	// 0: Null, 1: Branch, 2: Ext or Leaf
-	flagValueNodeG := Flag_value{
-		encoded_prefix: compact_encode([]uint8{5, 16}),
-		value:          "coin",
-	}
-	nodeG := Node{
-		node_type:  2, //Leaf
-		flag_value: flagValueNodeG,
-	}
-	hashNodeG := nodeG.hash_node()
-	mpt.db[hashNodeG] = nodeG
-
-	/*---------- F ------------------ */
-	flagValueNodeF := Flag_value{
-		encoded_prefix: nil,
-		value:          "",
-	}
-	nodeF := Node{
-		node_type:    1, //Branch
-		flag_value:   flagValueNodeF,
-		branch_value: [17]string{"", "", "", "", "", "", hashNodeG, "", "", "", "", "", "", "", "", "", "puppy"},
-	}
-	hashNodeF := nodeF.hash_node()
-	mpt.db[hashNodeF] = nodeF
-	/*---------- E ------------------ */
-	flagValueNodeE := Flag_value{
-		encoded_prefix: compact_encode([]uint8{7}),
-		value:          hashNodeF,
-	}
-	nodeE := Node{
-		node_type:  2, //Extension
-		flag_value: flagValueNodeE,
-	}
-	hashNodeE := nodeE.hash_node()
-	mpt.db[hashNodeE] = nodeE
-	/*---------- J ------------------ */
-	flagValueNodeJ := Flag_value{
-		encoded_prefix: nil,
-		value:          "book",
-	}
-	nodeJ := Node{
-		node_type:  2, //Extension
-		flag_value: flagValueNodeJ,
-	}
-	hashNodeJ := nodeJ.hash_node()
-	mpt.db[hashNodeJ] = nodeJ
-	/*---------- H ------------------ */
-	flagValueNodeH := Flag_value{
-		encoded_prefix: nil,
-		value:          "",
-	}
-	nodeH := Node{
-		node_type:    1, //Branch
-		flag_value:   flagValueNodeH,
-		branch_value: [17]string{"", "", hashNodeJ, "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
-	}
-	hashNodeH := nodeH.hash_node()
-	mpt.db[hashNodeH] = nodeH
-	/*---------- D ------------------ */
-	flagValueNodeD := Flag_value{
-		encoded_prefix: nil,
-		value:          "",
-	}
-	nodeD := Node{
-		node_type:    1, //Branch
-		flag_value:   flagValueNodeD,
-		branch_value: [17]string{"", "", hashNodeH, "", "", "", hashNodeE, "", "", "", "", "", "", "", "", "", "verb"},
-	}
-	hashNodeD := nodeD.hash_node()
-	mpt.db[hashNodeD] = nodeD
-
-	/*---------- B ------------------ */
-	flagValueNodeB := Flag_value{
-		encoded_prefix: compact_encode([]uint8{6, 15}),
-		value:          hashNodeD,
-	}
-	nodeB := Node{
-		node_type:  2, //Extension
-		flag_value: flagValueNodeB,
-	}
-	hashNodeB := nodeB.hash_node()
-	mpt.db[hashNodeB] = nodeB
-	/*---------- C ------------------ */
-	flagValueNodeC := Flag_value{
-		encoded_prefix: compact_encode([]uint8{6, 15, 7, 2, 7, 3, 6, 5, 16}),
-		value:          "stallion",
-	}
-	nodeC := Node{
-		node_type:  2, //Leaf
-		flag_value: flagValueNodeC,
-	}
-	hashNodeC := nodeC.hash_node()
-	mpt.db[hashNodeC] = nodeC
-	/*---------- A ------------------ */
-	flagValueNodeA := Flag_value{
-		encoded_prefix: nil,
-		value:          "",
-	}
-	nodeA := Node{
-		node_type:    1, //Branch
-		flag_value:   flagValueNodeA,
-		branch_value: [17]string{"", "", "", "", hashNodeB, "", "", "", hashNodeC, "", "", "", "", "", "", "", ""},
-	}
-	hashNodeA := nodeA.hash_node()
-	mpt.db[hashNodeA] = nodeA
-
-	/*---------- Root  ------------------ */
-	flagValueRoot := Flag_value{
-		encoded_prefix: compact_encode([]uint8{6}),
-		value:          hashNodeA,
-	}
-	nodeRoot := Node{
-		node_type:  2, //Extension Root
-		flag_value: flagValueRoot,
-	}
-	hashNodeRoot := nodeRoot.hash_node()
-	mpt.db[hashNodeRoot] = nodeRoot
-	mpt.root = hashNodeRoot
-	return errors.New("Problem occured while creating Root Node")
-}
-
-/* CreateTestMpt3
-*
-* To create dummy Mpt
- */
-func (mpt *MerklePatriciaTrie) CreateTestMpt3() error {
-	mpt.db = make(map[string]Node)
-
-	flagValueNodeC := Flag_value{
-		encoded_prefix: compact_encode([]uint8{2}),
-		value:          "pie",
-	}
-	nodeC := Node{
-		node_type:  2, //Leaf
-		flag_value: flagValueNodeC,
-	}
-	hashNodeC := nodeC.hash_node()
-	mpt.db[hashNodeC] = nodeC
-
-	flagValueNodeB := Flag_value{
-		encoded_prefix: compact_encode([]uint8{1}),
-		value:          "apple",
-	}
-	nodeB := Node{
-		node_type:  2, //Leaf
-		flag_value: flagValueNodeB,
-	}
-	hashNodeB := nodeB.hash_node()
-	mpt.db[hashNodeB] = nodeB
-
-	flagValueNodeRootA := Flag_value{
-		encoded_prefix: nil,
-		value:          "",
-	}
-	nodeRootA := Node{
-		node_type:    1, //Branch
-		flag_value:   flagValueNodeRootA,
-		branch_value: [17]string{"", "", "", "", "", "", hashNodeB, hashNodeC, "", "", "", "", "", "", "", "", ""},
-	}
-
-	hashNodeRootA := nodeRootA.hash_node()
-	mpt.db[hashNodeRootA] = nodeRootA
-	mpt.root = hashNodeRootA
-	return errors.New("Problem occured while creating Root Node")
-}
-
 /* Test_compact_encode
 *
 * To Test compact_encode()
@@ -1324,12 +1150,12 @@ func test_compact_encode() {
 	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
 }
 
-/* Test_Insert_Get
+/* Test1_2
 *
 * To Test Insert and Get functions
 */
-func Test_Insert_Get_Delete() {
-	fmt.Println("-------------------Test_Insert_Get-------------------")
+func Test1_2() {
+	fmt.Println("-------------------Test 1-------------------")
 	mpt := InitializeMpt()
 	mpt.Insert("a", "apple")
 	mpt.Insert("ab", "banana")
@@ -1338,7 +1164,7 @@ func Test_Insert_Get_Delete() {
 	mpt.Insert("c", "Doggy")
 	mpt.Insert("r", "Lucy")
 
-	fmt.Println(mpt.Order_nodes())
+	//fmt.Println(mpt.Order_nodes())
 
 	value1, _ := mpt.Get("a")
 	value2, _ := mpt.Get("ab")
@@ -1354,8 +1180,7 @@ func Test_Insert_Get_Delete() {
 	fmt.Println(reflect.DeepEqual("Doggy", value5))
 	fmt.Println(reflect.DeepEqual("Lucy", value6))
 
-	
-	fmt.Println("-------------------Test_Get_Delete-------------------")
+	fmt.Println("-------------------Test 2-------------------")
 	mpt.Delete("a")
 	mpt.Delete("ab")
 	mpt.Delete("acb")
@@ -1376,48 +1201,17 @@ func Test_Insert_Get_Delete() {
 	fmt.Println(reflect.DeepEqual("", value10))
 	fmt.Println(reflect.DeepEqual("", value11))
 	fmt.Println(reflect.DeepEqual("", value12))
-	
 }
 
-/* Test_Get
-*
-* To Test Get functions
-*/
-func (mpt *MerklePatriciaTrie) Test_Get() {
-	mpt = InitializeMpt()
-	mpt.CreateTestMpt()
-
-	value1, _ := mpt.Get("do")
-	value2, _ := mpt.Get("dog")
-	value3, _ := mpt.Get("doge")
-	value4, _ := mpt.Get("horse")
-	value5, _ := mpt.Get("do\"")
-	value6, _ := mpt.Get("")
-	fmt.Println("-------------------Test_Get1-------------------")
-	fmt.Println(reflect.DeepEqual("verb", value1))
-	fmt.Println(reflect.DeepEqual("puppy", value2))
-	fmt.Println(reflect.DeepEqual("coin", value3))
-	fmt.Println(reflect.DeepEqual("stallion", value4))
-	fmt.Println(reflect.DeepEqual("book", value5))
-	fmt.Println(reflect.DeepEqual("", value6))
-
-	mpt = InitializeMpt()
-	mpt.CreateTestMpt3()
-	fmt.Println(mpt.Order_nodes())
-	value7, _ := mpt.Get("r")
-	value8, _ := mpt.Get("a")
-	fmt.Println("-------------------Test_Get2-------------------")
-	fmt.Println(reflect.DeepEqual("pie", value7))
-	fmt.Println(reflect.DeepEqual("apple", value8))
-
-	fmt.Println("-------------------Test_Get3-------------------")
-	mpt = InitializeMpt()
+func Test3_4(){
+	fmt.Println("-------------------Test 3-------------------")
+	mpt := InitializeMpt()
 
 	mpt.Insert("q", "apple")
 	mpt.Insert("aaa", "apple")
 	mpt.Insert("aap", "orange")
 	mpt.Insert("ba", "new")
-	fmt.Println(mpt.Order_nodes())
+	//fmt.Println(mpt.Order_nodes())
 	v1,_ := mpt.Get("q")
 	v2,_ := mpt.Get("aaa")
 	v3,_ := mpt.Get("aap")
@@ -1428,31 +1222,31 @@ func (mpt *MerklePatriciaTrie) Test_Get() {
 	fmt.Println(reflect.DeepEqual("orange", v3))
 	fmt.Println(reflect.DeepEqual("new", v4))
 
- 	fmt.Println("-------------------Test_Get4-------------------")
+ 	fmt.Println("-------------------Test 4-------------------")
 
 	mpt = InitializeMpt()
 	mpt.Insert("p", "apple")
 	mpt.Insert("aa", "banana")
 	mpt.Insert("ap", "orange")
-	fmt.Println(mpt.Order_nodes())
-	v1,_ := mpt.Get("p")
-	v2,_ := mpt.Get("aa")
-	v3,_ := mpt.Get("ap")
+	//fmt.Println(mpt.Order_nodes())
+	v1,_ = mpt.Get("p")
+	v2,_ = mpt.Get("aa")
+	v3,_ = mpt.Get("ap")
 	fmt.Println(reflect.DeepEqual("apple", v1))
 	fmt.Println(reflect.DeepEqual("banana", v2))
 	fmt.Println(reflect.DeepEqual("orange", v3))
 }
 
-func TestInsertDeleteGet3() {
+func Test5() {
+	fmt.Println("-------------------Test 5-------------------")
 	mpt := InitializeMpt()
-
 	mpt.Insert("a", "a")
 	mpt.Insert("b", "b")
 	mpt.Insert("ab", "ab")
 
-	fmt.Println(mpt.Order_nodes())
+	//fmt.Println(mpt.Order_nodes())
 	mpt.Delete("b")
-	fmt.Println(mpt.Order_nodes())
+	//fmt.Println(mpt.Order_nodes())
 
 	value1, _ := mpt.Get("a")
 	value2, _ := mpt.Get("b")
@@ -1463,20 +1257,15 @@ func TestInsertDeleteGet3() {
 	fmt.Println(reflect.DeepEqual("ab", value3))
 }
 
-func TestInsertGet2() {
-	fmt.Println("****** RUNNING TESTS for INSERT AND GET *********")
+func Test6() {
+	fmt.Println("-------------------Test 6-------------------")
 	mpt := MerklePatriciaTrie{}
 	mpt.db = make(map[string]Node)
-
-
 	mpt.Insert("a", "apple")
 	mpt.Insert("ab", "banana")
 	value1, _ := mpt.Get("a")
 	value2, _ := mpt.Get("ab")
-
-	fmt.Println(mpt.Order_nodes())
-	fmt.Println("ab:",value2)
-
+	//fmt.Println(mpt.Order_nodes())
 	fmt.Println(reflect.DeepEqual("apple", value1))
 	fmt.Println(reflect.DeepEqual("banana", value2))
 }

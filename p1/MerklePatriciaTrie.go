@@ -532,6 +532,16 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 			if nodeType == 2 || nodeType == 3{
 				value = node.flag_value.value
 				return value, nil, nil, nodeType, node
+			} else if nodeType == 0 || nodeType == 1{
+				nextNode = mpt.db[node.flag_value.value]
+				if nextNode.node_type == 1{
+					value = nextNode.branch_value[16]
+					return value, nil, nil, nodeType, node
+				} else if nextNode.node_type == 2{
+					// Certainly is leaf as full path match
+					value = nextNode.flag_value.value
+					return value, nil, nil, nodeType, node
+				}
 			} else {
 				return value, errors.New("Invalid_nodeType_at_Leaf"), nil, 10, nextNode
 			}
@@ -637,61 +647,6 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	}
 	return "" , nil, remainPath, nodeType, nextNode
 }
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-	// // if whole match, return Branch Node Value if current Node is Ext/Leaf
-	// if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 2 {
-	// 	nextBranchNode := mpt.db[node.flag_value.value]
-	// 	value = nextBranchNode.branch_value[16]
-	// 	return value, nil, remainPath, nodeType, nextBranchNode
-	// }
-	// // if whole match, if current Node is Branch
-	// if node.branch_value[searchPath[0]] != "" && node.node_type == 1 {
-	// 	nextNode = mpt.db[node.branch_value[searchPath[0]]]
-	// 	if nextNode.node_type == 1 && len(searchPath) == 1 {
-	// 		value = nextNode.branch_value[16]
-	// 	} else if nextNode.node_type == 2 {
-	// 		nextNode = mpt.db[nextNode.flag_value.value]
-	// 	}
-	// 	return value, nil, remainPath, nodeType, nextNode
-	// }
-	// // if whole match path and remaining value
-	// if matchedIndex+1 == len(currentPath) && len(remainPath) != 0 {
-	// 	nextBranchNode := mpt.db[node.flag_value.value]
-	// 	if nextBranchNode.branch_value[remainPath[0]] != "" {
-	// 		nextNode = mpt.db[nextBranchNode.branch_value[remainPath[0]]]
-	// 		if nextNode.node_type == 1 {
-	// 			// Node is Branch
-	// 			remainPath = remainPath[1:]
-	// 		} else if nextNode.node_type == 2 {
-	// 			// Leaf or Extension
-	// 			nodeType = GetNodeType(nextNode)
-	// 			if nodeType < 2 {
-	// 				//Extension
-	// 				remainPath = remainPath[1:]
-	// 			} else {
-	// 				//Leaf
-	// 				remainPath = remainPath[1:]
-	// 			}
-	// 		}
-	// 	} else {
-	// 		// if no match path
-	// 		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
-	// 	}
-	// }
-	// return "", nil, remainPath, nodeType, nextNode
 
 
 /*-------------------------DELETE HELPER---------------------------------------------------*/
@@ -1430,72 +1385,101 @@ func Test_Insert_Get_Delete() {
 */
 func (mpt *MerklePatriciaTrie) Test_Get() {
 	mpt = InitializeMpt()
-	// mpt.CreateTestMpt()
+	mpt.CreateTestMpt()
 
-	// value1, _ := mpt.Get("do")
-	// value2, _ := mpt.Get("dog")
-	// value3, _ := mpt.Get("doge")
-	// value4, _ := mpt.Get("horse")
-	// value5, _ := mpt.Get("do\"")
-	// value6, _ := mpt.Get("")
-	// fmt.Println("-------------------Test_Get1-------------------")
-	// fmt.Println(reflect.DeepEqual("verb", value1))
-	// fmt.Println(reflect.DeepEqual("puppy", value2))
-	// fmt.Println(reflect.DeepEqual("coin", value3))
-	// fmt.Println(reflect.DeepEqual("stallion", value4))
-	//fmt.Println(reflect.DeepEqual("book", value5))
-	//fmt.Println(reflect.DeepEqual("", value6))
+	value1, _ := mpt.Get("do")
+	value2, _ := mpt.Get("dog")
+	value3, _ := mpt.Get("doge")
+	value4, _ := mpt.Get("horse")
+	value5, _ := mpt.Get("do\"")
+	value6, _ := mpt.Get("")
+	fmt.Println("-------------------Test_Get1-------------------")
+	fmt.Println(reflect.DeepEqual("verb", value1))
+	fmt.Println(reflect.DeepEqual("puppy", value2))
+	fmt.Println(reflect.DeepEqual("coin", value3))
+	fmt.Println(reflect.DeepEqual("stallion", value4))
+	fmt.Println(reflect.DeepEqual("book", value5))
+	fmt.Println(reflect.DeepEqual("", value6))
 
-	// mpt = InitializeMpt()
-	// mpt.CreateTestMpt3()
-	// fmt.Println(mpt.Order_nodes())
-	// value7, _ := mpt.Get("r")
-	// value8, _ := mpt.Get("a")
-	// fmt.Println("-------------------Test_Get2-------------------")
-	// fmt.Println(reflect.DeepEqual("pie", value7))
-	// fmt.Println(reflect.DeepEqual("apple", value8))
+	mpt = InitializeMpt()
+	mpt.CreateTestMpt3()
+	fmt.Println(mpt.Order_nodes())
+	value7, _ := mpt.Get("r")
+	value8, _ := mpt.Get("a")
+	fmt.Println("-------------------Test_Get2-------------------")
+	fmt.Println(reflect.DeepEqual("pie", value7))
+	fmt.Println(reflect.DeepEqual("apple", value8))
 
 	fmt.Println("-------------------Test_Get3-------------------")
 	mpt = InitializeMpt()
 
-	// mpt.Insert("q", "apple")
-	// mpt.Insert("aaa", "apple")
-	// mpt.Insert("aap", "orange")
-	// mpt.Insert("ba", "new")
-	// fmt.Println(mpt.Order_nodes())
-	// v1,_ := mpt.Get("q")
-	// v2,_ := mpt.Get("aaa")
-	// v3,_ := mpt.Get("aap")
-	// v4,_ := mpt.Get("ba")
+	mpt.Insert("q", "apple")
+	mpt.Insert("aaa", "apple")
+	mpt.Insert("aap", "orange")
+	mpt.Insert("ba", "new")
+	fmt.Println(mpt.Order_nodes())
+	v1,_ := mpt.Get("q")
+	v2,_ := mpt.Get("aaa")
+	v3,_ := mpt.Get("aap")
+	v4,_ := mpt.Get("ba")
 
-	// fmt.Println(reflect.DeepEqual("apple", v1))
-	// fmt.Println(reflect.DeepEqual("apple", v2))
-	// fmt.Println(reflect.DeepEqual("orange", v3))
-	// fmt.Println(reflect.DeepEqual("new", v4))
+	fmt.Println(reflect.DeepEqual("apple", v1))
+	fmt.Println(reflect.DeepEqual("apple", v2))
+	fmt.Println(reflect.DeepEqual("orange", v3))
+	fmt.Println(reflect.DeepEqual("new", v4))
 
  	fmt.Println("-------------------Test_Get4-------------------")
 
-	 mpt = InitializeMpt()
+	mpt = InitializeMpt()
 	mpt.Insert("p", "apple")
 	mpt.Insert("aa", "banana")
 	mpt.Insert("ap", "orange")
-
 	fmt.Println(mpt.Order_nodes())
 	v1,_ := mpt.Get("p")
 	v2,_ := mpt.Get("aa")
 	v3,_ := mpt.Get("ap")
-
-
 	fmt.Println(reflect.DeepEqual("apple", v1))
 	fmt.Println(reflect.DeepEqual("banana", v2))
 	fmt.Println(reflect.DeepEqual("orange", v3))
-
-
-
-
-
 }
 
+func TestInsertDeleteGet3() {
+	mpt := InitializeMpt()
+
+	mpt.Insert("a", "a")
+	mpt.Insert("b", "b")
+	mpt.Insert("ab", "ab")
+
+	fmt.Println(mpt.Order_nodes())
+	mpt.Delete("b")
+	fmt.Println(mpt.Order_nodes())
+
+	value1, _ := mpt.Get("a")
+	value2, _ := mpt.Get("b")
+	value3, _ := mpt.Get("ab")
+
+	fmt.Println(reflect.DeepEqual("a", value1))
+	fmt.Println(reflect.DeepEqual("", value2))
+	fmt.Println(reflect.DeepEqual("ab", value3))
+}
+
+func TestInsertGet2() {
+	fmt.Println("****** RUNNING TESTS for INSERT AND GET *********")
+	mpt := MerklePatriciaTrie{}
+	mpt.db = make(map[string]Node)
+
+
+	mpt.Insert("a", "apple")
+	mpt.Insert("ab", "banana")
+	value1, _ := mpt.Get("a")
+	value2, _ := mpt.Get("ab")
+
+	fmt.Println(mpt.Order_nodes())
+	fmt.Println("ab:",value2)
+
+	fmt.Println(reflect.DeepEqual("apple", value1))
+	fmt.Println(reflect.DeepEqual("banana", value2))
+}
 
 /* String
 * To support node printing

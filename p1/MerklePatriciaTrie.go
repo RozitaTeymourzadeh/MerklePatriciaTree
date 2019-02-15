@@ -616,15 +616,14 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 				// PartialMatch + Node type Branch to Extention
 				// PartialMatch + Node type Branch to Leaf
 				nodeType = GetNodeType(nextNode)
-				if len(remainPath)== 1{
-					if nextNode.node_type == 1 {
-						value = nextNode.branch_value[16]
-						return value, nil, nil, nodeType, nextNode
-					} else{
+				if nodeType > 1{
+					//Leaf
 						value = nextNode.flag_value.value
 						return value, nil, nil, nodeType, nextNode
-					}
-				}else{
+						// no need decrement as it is leaf
+				} else {
+					//Extension
+					nextNode = mpt.db[nextNode.flag_value.value]
 					remainPath = remainPath[1:]
 					return "", nil, remainPath, nodeType, nextNode
 				}
@@ -1431,62 +1430,72 @@ func Test_Insert_Get_Delete() {
 */
 func (mpt *MerklePatriciaTrie) Test_Get() {
 	mpt = InitializeMpt()
-	mpt.CreateTestMpt()
+	// mpt.CreateTestMpt()
 
-	value1, _ := mpt.Get("do")
-	value2, _ := mpt.Get("dog")
-	value3, _ := mpt.Get("doge")
-	value4, _ := mpt.Get("horse")
-	//value5, _ := mpt.Get("do\"")
-	value6, _ := mpt.Get("")
-	fmt.Println("-------------------Test_Get-------------------")
-	fmt.Println(reflect.DeepEqual("verb", value1))
-	fmt.Println(reflect.DeepEqual("puppy", value2))
-	fmt.Println(reflect.DeepEqual("coin", value3))
-	fmt.Println(reflect.DeepEqual("stallion", value4))
+	// value1, _ := mpt.Get("do")
+	// value2, _ := mpt.Get("dog")
+	// value3, _ := mpt.Get("doge")
+	// value4, _ := mpt.Get("horse")
+	// value5, _ := mpt.Get("do\"")
+	// value6, _ := mpt.Get("")
+	// fmt.Println("-------------------Test_Get1-------------------")
+	// fmt.Println(reflect.DeepEqual("verb", value1))
+	// fmt.Println(reflect.DeepEqual("puppy", value2))
+	// fmt.Println(reflect.DeepEqual("coin", value3))
+	// fmt.Println(reflect.DeepEqual("stallion", value4))
 	//fmt.Println(reflect.DeepEqual("book", value5))
-	fmt.Println(reflect.DeepEqual("", value6))
+	//fmt.Println(reflect.DeepEqual("", value6))
 
+	// mpt = InitializeMpt()
+	// mpt.CreateTestMpt3()
+	// fmt.Println(mpt.Order_nodes())
+	// value7, _ := mpt.Get("r")
+	// value8, _ := mpt.Get("a")
+	// fmt.Println("-------------------Test_Get2-------------------")
+	// fmt.Println(reflect.DeepEqual("pie", value7))
+	// fmt.Println(reflect.DeepEqual("apple", value8))
+
+	fmt.Println("-------------------Test_Get3-------------------")
 	mpt = InitializeMpt()
-	mpt.CreateTestMpt3()
 
-	value7, _ := mpt.Get("r")
-	value8, _ := mpt.Get("a")
-	fmt.Println("-------------------Test_Get-------------------")
-	fmt.Println(reflect.DeepEqual("pie", value7))
-	fmt.Println(reflect.DeepEqual("apple", value8))
+	// mpt.Insert("q", "apple")
+	// mpt.Insert("aaa", "apple")
+	// mpt.Insert("aap", "orange")
+	// mpt.Insert("ba", "new")
+	// fmt.Println(mpt.Order_nodes())
+	// v1,_ := mpt.Get("q")
+	// v2,_ := mpt.Get("aaa")
+	// v3,_ := mpt.Get("aap")
+	// v4,_ := mpt.Get("ba")
 
-	fmt.Println("-------------------Test_Get-------------------")
-	mpt = InitializeMpt()
+	// fmt.Println(reflect.DeepEqual("apple", v1))
+	// fmt.Println(reflect.DeepEqual("apple", v2))
+	// fmt.Println(reflect.DeepEqual("orange", v3))
+	// fmt.Println(reflect.DeepEqual("new", v4))
 
+ 	fmt.Println("-------------------Test_Get4-------------------")
+
+	 mpt = InitializeMpt()
 	mpt.Insert("p", "apple")
-	mpt.Insert("aaa", "apple")
-	mpt.Insert("aap", "orange")
-	mpt.Insert("ba", "new")
-	
+	mpt.Insert("aa", "banana")
+	mpt.Insert("ap", "orange")
+
+	fmt.Println(mpt.Order_nodes())
 	v1,_ := mpt.Get("p")
-	v2,_ := mpt.Get("aaa")
-	v3,_ := mpt.Get("aap")
-	v4,_ := mpt.Get("ba")
+	v2,_ := mpt.Get("aa")
+	v3,_ := mpt.Get("ap")
+
 
 	fmt.Println(reflect.DeepEqual("apple", v1))
-	fmt.Println(reflect.DeepEqual("apple", v2))
+	fmt.Println(reflect.DeepEqual("banana", v2))
 	fmt.Println(reflect.DeepEqual("orange", v3))
-	fmt.Println(reflect.DeepEqual("new", v4))
+
+
+
+
 
 }
 
-// func Test_Get2() {
-// 	mpt := p1.InitializeMpt()
-// 	mpt.Insert("p", "apple")
-// 	mpt.Insert("aaa", "apple")
-// 	mpt.Insert("aap", "orange")
-// 	mpt.Insert("ba", "new")
-// 	v,_ := mpt.Get("aaa")
-// 	fmt.Println(mpt.Order_nodes())
-// 	fmt.Print(mpt)
-// 	fmt.Println(v)
-// }
 
 /* String
 * To support node printing

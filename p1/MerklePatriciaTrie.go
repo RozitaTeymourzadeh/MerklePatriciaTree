@@ -111,10 +111,16 @@ func compact_encode(hex_array []uint8) []uint8 {
 *@ output: nodeType uint8
  */
 func GetNodeType(node Node) uint8 {
-
 	var nodeType uint8
+	nodeType =0
+	if node.node_type != 2 {
+		return 10
+	}
+	
 	encoded_prefix := node.flag_value.encoded_prefix[0]
-	nodeType = encoded_prefix / 16
+	if encoded_prefix != 0 {
+		nodeType = encoded_prefix / 16
+	}
 	return nodeType
 }
 
@@ -496,6 +502,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	if node.node_type == 2 {
 		// Extension or Leaf
 		currentPath = compact_decode(node.flag_value.encoded_prefix)
+		nodeType = GetNodeType(node)
 	} else if node.node_type == 1 {
 		// Branch
 		branchCurrentPath := node.branch_value
@@ -510,48 +517,183 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 	}
 	matchedIndex, remainPath := EqualArray(currentPath, searchPath)
-	// if whole match, return Branch Node Value if current Node is Ext/Leaf
+	// WholeMatch + Node type Branch to Extention - (Not Valid Case)
+
+	//WholeMatch 
 	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 2 {
-		nextBranchNode := mpt.db[node.flag_value.value]
-		value = nextBranchNode.branch_value[16]
-		return value, nil, remainPath, nodeType, nextBranchNode
-	}
-	// if whole match, if current Node is Branch
-	if node.branch_value[searchPath[0]] != "" && node.node_type == 1 {
-		nextNode = mpt.db[node.branch_value[searchPath[0]]]
-		if nextNode.node_type == 1 && len(searchPath) == 1 {
-			value = nextNode.branch_value[16]
-		} else if nextNode.node_type == 2 {
-			nextNode = mpt.db[nextNode.flag_value.value]
-		}
-		return value, nil, remainPath, nodeType, nextNode
-	}
-	// if whole match path and remaining value
-	if matchedIndex+1 == len(currentPath) && len(remainPath) != 0 {
-		nextBranchNode := mpt.db[node.flag_value.value]
-		if nextBranchNode.branch_value[remainPath[0]] != "" {
-			nextNode = mpt.db[nextBranchNode.branch_value[remainPath[0]]]
-			if nextNode.node_type == 1 {
-				// Node is Branch
-				remainPath = remainPath[1:]
-			} else if nextNode.node_type == 2 {
-				// Leaf or Extension
-				nodeType = GetNodeType(nextNode)
-				if nodeType < 2 {
-					//Extension
-					remainPath = remainPath[1:]
-				} else {
-					//Leaf
-					remainPath = remainPath[1:]
-				}
+
+		if node.node_type == 1{
+			// WholeMatch + Node type Extension to Branch
+			value = node.branch_value[16]
+			return value, nil, nil, 10, node
+		} else if node.node_type == 2{
+			// WholeMatch + Node type Extension to Leaf
+			nodeType = GetNodeType(node)
+			if nodeType == 2 || nodeType == 3{
+				value = node.flag_value.value
+				return value, nil, nil, nodeType, node
+			} else {
+				return value, errors.New("Invalid_nodeType_at_Leaf"), nil, 10, nextNode
 			}
 		} else {
-			// if no match path
-			return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
+			return value, errors.New("Invalid_node_type"), nil, 10, nextNode
 		}
 	}
-	return "", nil, remainPath, nodeType, nextNode
+	//WholeMatch from Branch Node and value is in next Node 
+	if node.branch_value[searchPath[0]] != "" && len(remainPath) == 0 && node.node_type == 1 {
+		//current node Branch
+		nextNode = mpt.db[node.branch_value[searchPath[0]]]
+
+		if nextNode.node_type == 1{
+			// WholeMatch + Node type Branch to Branch
+			value = nextNode.branch_value[16]
+			return value, nil, nil, 10, nextNode
+  	} else if nextNode.node_type == 2{
+			// WholeMatch + Node type Branch to Leaf
+			nodeType = GetNodeType(nextNode)
+			if nodeType == 2 || nodeType == 3{
+				value = nextNode.flag_value.value
+				return value, nil, nil, nodeType, nextNode
+			}else {
+			return "", errors.New("Invalid_nodeType_at_Leaf"), nil, 10, nextNode
+			}
+		} else {
+			return "", errors.New("Invalid_node_type"), nil, 10, nextNode
+		}
+	}
+
+	//PartialMatch
+	if matchedIndex >= 0 || node.branch_value[searchPath[0]] != "" {
+		//PartialMatch from Extension 
+		if matchedIndex+1 == len(currentPath) && len(remainPath) != 0 && node.node_type == 2 {
+			//Current Node Extension
+			nextNode := mpt.db[node.flag_value.value]
+			
+			if nextNode.node_type == 1 && nextNode.branch_value[remainPath[0]] != "" {
+				// PartialMatch + Node type Extention to Branch
+				nextNode = mpt.db[nextNode.branch_value[remainPath[0]]]
+				if len(remainPath)== 1{
+					if nextNode.node_type == 1 {
+						value = nextNode.branch_value[16]
+						return value, nil, nil, nodeType, nextNode
+					} else{
+						value = nextNode.flag_value.value
+						return value, nil, nil, nodeType, nextNode
+					}
+				}else{
+					remainPath = remainPath[1:]
+					return "", nil, remainPath, nodeType, nextNode
+				}
+			} else if nextNode.node_type == 2{
+				// PartialMatch + Node type Extention to Leaf
+				nodeType = GetNodeType(nextNode)
+			} else {
+				return "", errors.New("Invalid_Node_Type"), remainPath, nodeType, nextNode
+			}
+			return value, nil , remainPath, nodeType, nextNode
+		}
+
+		//PartialMatch from Branch
+		if node.branch_value[searchPath[0]] != "" && len(remainPath) != 0 && node.node_type == 1 {
+		 //Current Node Branch
+			nextNode := mpt.db[node.branch_value[searchPath[0]]]
+			// PartialMatch + Node type Branch to Branch 
+			if nextNode.node_type == 1 {
+				nextNode = mpt.db[nextNode.branch_value[remainPath[0]]]
+				if len(remainPath)== 1{
+					if nextNode.node_type == 1 {
+						value = nextNode.branch_value[16]
+						return value, nil, nil, nodeType, nextNode
+					} else{
+						value = nextNode.flag_value.value
+						return value, nil, nil, nodeType, nextNode
+					}
+				}else{
+					remainPath = remainPath[1:]
+					return "", nil, remainPath, nodeType, nextNode
+				}
+			} else if nextNode.node_type == 2{
+				// PartialMatch + Node type Branch to Extention
+				// PartialMatch + Node type Branch to Leaf
+				nodeType = GetNodeType(nextNode)
+				if len(remainPath)== 1{
+					if nextNode.node_type == 1 {
+						value = nextNode.branch_value[16]
+						return value, nil, nil, nodeType, nextNode
+					} else{
+						value = nextNode.flag_value.value
+						return value, nil, nil, nodeType, nextNode
+					}
+				}else{
+					remainPath = remainPath[1:]
+					return "", nil, remainPath, nodeType, nextNode
+				}
+			} else {
+				return "", errors.New("Invalid_node_type"), remainPath, nodeType, nextNode
+			}
+		}
+	} else {
+		// if no match path
+		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
+	}
+	return "" , nil, remainPath, nodeType, nextNode
 }
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+	// // if whole match, return Branch Node Value if current Node is Ext/Leaf
+	// if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 2 {
+	// 	nextBranchNode := mpt.db[node.flag_value.value]
+	// 	value = nextBranchNode.branch_value[16]
+	// 	return value, nil, remainPath, nodeType, nextBranchNode
+	// }
+	// // if whole match, if current Node is Branch
+	// if node.branch_value[searchPath[0]] != "" && node.node_type == 1 {
+	// 	nextNode = mpt.db[node.branch_value[searchPath[0]]]
+	// 	if nextNode.node_type == 1 && len(searchPath) == 1 {
+	// 		value = nextNode.branch_value[16]
+	// 	} else if nextNode.node_type == 2 {
+	// 		nextNode = mpt.db[nextNode.flag_value.value]
+	// 	}
+	// 	return value, nil, remainPath, nodeType, nextNode
+	// }
+	// // if whole match path and remaining value
+	// if matchedIndex+1 == len(currentPath) && len(remainPath) != 0 {
+	// 	nextBranchNode := mpt.db[node.flag_value.value]
+	// 	if nextBranchNode.branch_value[remainPath[0]] != "" {
+	// 		nextNode = mpt.db[nextBranchNode.branch_value[remainPath[0]]]
+	// 		if nextNode.node_type == 1 {
+	// 			// Node is Branch
+	// 			remainPath = remainPath[1:]
+	// 		} else if nextNode.node_type == 2 {
+	// 			// Leaf or Extension
+	// 			nodeType = GetNodeType(nextNode)
+	// 			if nodeType < 2 {
+	// 				//Extension
+	// 				remainPath = remainPath[1:]
+	// 			} else {
+	// 				//Leaf
+	// 				remainPath = remainPath[1:]
+	// 			}
+	// 		}
+	// 	} else {
+	// 		// if no match path
+	// 		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
+	// 	}
+	// }
+	// return "", nil, remainPath, nodeType, nextNode
+
 
 /*-------------------------DELETE HELPER---------------------------------------------------*/
 /* SubFunction of Get Master Function
@@ -1242,6 +1384,8 @@ func Test_Insert_Get_Delete() {
 	mpt.Insert("c", "Doggy")
 	mpt.Insert("r", "Lucy")
 
+	fmt.Println(mpt.Order_nodes())
+
 	value1, _ := mpt.Get("a")
 	value2, _ := mpt.Get("ab")
 	value3, _ := mpt.Get("acb")
@@ -1293,14 +1437,14 @@ func (mpt *MerklePatriciaTrie) Test_Get() {
 	value2, _ := mpt.Get("dog")
 	value3, _ := mpt.Get("doge")
 	value4, _ := mpt.Get("horse")
-	value5, _ := mpt.Get("do\"")
+	//value5, _ := mpt.Get("do\"")
 	value6, _ := mpt.Get("")
 	fmt.Println("-------------------Test_Get-------------------")
 	fmt.Println(reflect.DeepEqual("verb", value1))
 	fmt.Println(reflect.DeepEqual("puppy", value2))
 	fmt.Println(reflect.DeepEqual("coin", value3))
 	fmt.Println(reflect.DeepEqual("stallion", value4))
-	fmt.Println(reflect.DeepEqual("book", value5))
+	//fmt.Println(reflect.DeepEqual("book", value5))
 	fmt.Println(reflect.DeepEqual("", value6))
 
 	mpt = InitializeMpt()
@@ -1311,6 +1455,25 @@ func (mpt *MerklePatriciaTrie) Test_Get() {
 	fmt.Println("-------------------Test_Get-------------------")
 	fmt.Println(reflect.DeepEqual("pie", value7))
 	fmt.Println(reflect.DeepEqual("apple", value8))
+
+	fmt.Println("-------------------Test_Get-------------------")
+	mpt = InitializeMpt()
+
+	mpt.Insert("p", "apple")
+	mpt.Insert("aaa", "apple")
+	mpt.Insert("aap", "orange")
+	mpt.Insert("ba", "new")
+	
+	v1,_ := mpt.Get("p")
+	v2,_ := mpt.Get("aaa")
+	v3,_ := mpt.Get("aap")
+	v4,_ := mpt.Get("ba")
+
+	fmt.Println(reflect.DeepEqual("apple", v1))
+	fmt.Println(reflect.DeepEqual("apple", v2))
+	fmt.Println(reflect.DeepEqual("orange", v3))
+	fmt.Println(reflect.DeepEqual("new", v4))
+
 }
 
 // func Test_Get2() {

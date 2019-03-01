@@ -14,4 +14,5 @@ func main() {
 			p1.Test3_4()
 			p1.Test5()
 			p1.Test6()
+			p1.Test7()
 }

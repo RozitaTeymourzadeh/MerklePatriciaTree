@@ -5,9 +5,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/sha3"
 	"reflect"
 	"strings"
+
+	"golang.org/x/crypto/sha3"
 )
 
 /*-------------------------STRUCT---------------------------------------------------*/
@@ -31,7 +32,9 @@ type MerklePatriciaTrie struct {
 	db   map[string]Node
 	root string
 }
+
 const NoChild = uint8(60)
+
 /*-------------------------SERVICE---------------------------------------------------*/
 /* Service functions act as helper function to others master functions
 /*-------------------------SERVICE---------------------------------------------------*/
@@ -112,11 +115,11 @@ func compact_encode(hex_array []uint8) []uint8 {
  */
 func GetNodeType(node Node) uint8 {
 	var nodeType uint8
-	nodeType =0
+	nodeType = 0
 	if node.node_type != 2 {
 		return 10
 	}
-	
+
 	encoded_prefix := node.flag_value.encoded_prefix[0]
 	if encoded_prefix != 0 {
 		nodeType = encoded_prefix / 16
@@ -196,7 +199,7 @@ func (s stack) Pop() (stack, Node) {
 * To compare 2 arrays and return no. of match index
 *@ input: a []uint8, b []uint8`
 *@ output: j int , remainPath []uint8
-*/
+ */
 func EqualArray(a, b []uint8) (int, []uint8) {
 	var j int
 	var remainPath []uint8
@@ -226,7 +229,7 @@ func EqualArray(a, b []uint8) (int, []uint8) {
 * To compare 2 path and return true if those are the same
 *@ input: path1 []uint8, path2 []uint8
 *@ output: bool
-*/
+ */
 func IsEqualPath(pathA []uint8, pathB []uint8) bool {
 	if pathA == nil {
 		return pathB == nil
@@ -249,7 +252,7 @@ func IsEqualPath(pathA []uint8, pathB []uint8) bool {
 * To find match character in path
 *@ input: pathA []uint8, pathB []uint8
 *@ output: []uint8
-*/
+ */
 func GetMatchPrefix(pathA []uint8, pathB []uint8) []uint8 {
 	minLength := len(pathA)
 	if minLength > len(pathB) {
@@ -304,7 +307,7 @@ func (mpt *MerklePatriciaTrie) UpdateHashValues(nodeChain []Node, child uint8, n
 *@ input: key string
 *@ output: value string, errorMsg error
  */
-func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
+func (mpt *MerklePatriciaTrie) Get2(key string) (string, error) {
 	var DEBUG int
 	DEBUG = 0
 	var value string
@@ -372,7 +375,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 				// Root is Ext or Leaf
 				newRootNode := mpt.MergeLeafExt(rootNode, path, new_value)
 				mpt.root = newRootNode.hash_node()
-			} 
+			}
 		}
 	} else if mpt.root == "" {
 		rootNode := CreateLeaf(path, new_value)
@@ -394,29 +397,29 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 			} else {
 				newRootNode := mpt.MergeLeafExt(rootNode, remainingPath, new_value)
 				mpt.root = newRootNode.hash_node()
-			} 
+			}
 		} else {
 			lastPrefixNode := nodePath[len(nodePath)-1]
 			if lastPrefixNode.IsBranch() {
 				if len(remainingPath) == 0 {
-						mpt.UpdateHashValues(nodePath, 16, new_value)
+					mpt.UpdateHashValues(nodePath, 16, new_value)
 				} else if lastPrefixNode.branch_value[remainingPath[0]] == "" {
-						//Branch Node in Leaf
-						newLeafNode := CreateLeaf(remainingPath[1:], new_value)
-						newLeafNodeHash := newLeafNode.hash_node()
-						mpt.db[newLeafNodeHash] = newLeafNode
-						mpt.UpdateHashValues(nodePath, remainingPath[0], newLeafNodeHash)
+					//Branch Node in Leaf
+					newLeafNode := CreateLeaf(remainingPath[1:], new_value)
+					newLeafNodeHash := newLeafNode.hash_node()
+					mpt.db[newLeafNodeHash] = newLeafNode
+					mpt.UpdateHashValues(nodePath, remainingPath[0], newLeafNodeHash)
 				} else {
-						// Find branch and child
-						childNode := mpt.GetHashNode(lastPrefixNode.branch_value[remainingPath[0]])
-						newChildNode := mpt.MergeLeafExt(childNode, remainingPath[1:], new_value)
-						mpt.UpdateHashValues(nodePath, remainingPath[0], newChildNode.hash_node())
+					// Find branch and child
+					childNode := mpt.GetHashNode(lastPrefixNode.branch_value[remainingPath[0]])
+					newChildNode := mpt.MergeLeafExt(childNode, remainingPath[1:], new_value)
+					mpt.UpdateHashValues(nodePath, remainingPath[0], newChildNode.hash_node())
 				}
 			} else {
 				lastPrefixNodeHash := lastPrefixNode.hash_node()
-				newLastPrefixNode := mpt.MergeLeafExt(lastPrefixNode,append(compact_decode(lastPrefixNode.flag_value.encoded_prefix), remainingPath...),new_value)
+				newLastPrefixNode := mpt.MergeLeafExt(lastPrefixNode, append(compact_decode(lastPrefixNode.flag_value.encoded_prefix), remainingPath...), new_value)
 				if len(nodePath) == 1 {
-						mpt.root = newLastPrefixNode.hash_node()
+					mpt.root = newLastPrefixNode.hash_node()
 				} else {
 					parentNode := nodePath[len(nodePath)-2]
 					childIndex := parentNode.GetBranchIndex(lastPrefixNodeHash)
@@ -452,7 +455,7 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 			parentNode := nodePath[len(nodePath)-2]
 			// Find extension with Leaf child
 			mpt.UpdateTrie(nodePath[:len(nodePath)-1],
-			parentNode.GetBranchIndex(lastPathNodeHashCode))
+				parentNode.GetBranchIndex(lastPathNodeHashCode))
 		}
 		return "", nil
 	}
@@ -519,25 +522,25 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	matchedIndex, remainPath := EqualArray(currentPath, searchPath)
 	// WholeMatch + Node type Branch to Extention - (Not Valid Case)
 
-	//WholeMatch 
+	//WholeMatch
 	if matchedIndex+1 == len(currentPath) && len(remainPath) == 0 && node.node_type == 2 {
 
-		if node.node_type == 1{
+		if node.node_type == 1 {
 			// WholeMatch + Node type Extension to Branch
 			value = node.branch_value[16]
 			return value, nil, nil, 10, node
-		} else if node.node_type == 2{
+		} else if node.node_type == 2 {
 			// WholeMatch + Node type Extension to Leaf
 			nodeType = GetNodeType(node)
-			if nodeType == 2 || nodeType == 3{
+			if nodeType == 2 || nodeType == 3 {
 				value = node.flag_value.value
 				return value, nil, nil, nodeType, node
-			} else if nodeType == 0 || nodeType == 1{
+			} else if nodeType == 0 || nodeType == 1 {
 				nextNode = mpt.db[node.flag_value.value]
-				if nextNode.node_type == 1{
+				if nextNode.node_type == 1 {
 					value = nextNode.branch_value[16]
 					return value, nil, nil, nodeType, node
-				} else if nextNode.node_type == 2{
+				} else if nextNode.node_type == 2 {
 					// Certainly is leaf as full path match
 					value = nextNode.flag_value.value
 					return value, nil, nil, nodeType, node
@@ -549,23 +552,23 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 			return value, errors.New("Invalid_node_type"), nil, 10, nextNode
 		}
 	}
-	//WholeMatch from Branch Node and value is in next Node 
+	//WholeMatch from Branch Node and value is in next Node
 	if node.branch_value[searchPath[0]] != "" && len(remainPath) == 0 && node.node_type == 1 {
 		//current node Branch
 		nextNode = mpt.db[node.branch_value[searchPath[0]]]
 
-		if nextNode.node_type == 1{
+		if nextNode.node_type == 1 {
 			// WholeMatch + Node type Branch to Branch
 			value = nextNode.branch_value[16]
 			return value, nil, nil, 10, nextNode
-  	} else if nextNode.node_type == 2{
+		} else if nextNode.node_type == 2 {
 			// WholeMatch + Node type Branch to Leaf
 			nodeType = GetNodeType(nextNode)
-			if nodeType == 2 || nodeType == 3{
+			if nodeType == 2 || nodeType == 3 {
 				value = nextNode.flag_value.value
 				return value, nil, nil, nodeType, nextNode
-			}else {
-			return "", errors.New("Invalid_nodeType_at_Leaf"), nil, 10, nextNode
+			} else {
+				return "", errors.New("Invalid_nodeType_at_Leaf"), nil, 10, nextNode
 			}
 		} else {
 			return "", errors.New("Invalid_node_type"), nil, 10, nextNode
@@ -574,63 +577,63 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 
 	//PartialMatch
 	if matchedIndex >= 0 || node.branch_value[searchPath[0]] != "" {
-		//PartialMatch from Extension 
+		//PartialMatch from Extension
 		if matchedIndex+1 == len(currentPath) && len(remainPath) != 0 && node.node_type == 2 {
 			//Current Node Extension
 			nextNode := mpt.db[node.flag_value.value]
-			
+
 			if nextNode.node_type == 1 && nextNode.branch_value[remainPath[0]] != "" {
 				// PartialMatch + Node type Extention to Branch
 				nextNode = mpt.db[nextNode.branch_value[remainPath[0]]]
-				if len(remainPath)== 1{
+				if len(remainPath) == 1 {
 					if nextNode.node_type == 1 {
 						value = nextNode.branch_value[16]
 						return value, nil, nil, nodeType, nextNode
-					} else{
+					} else {
 						value = nextNode.flag_value.value
 						return value, nil, nil, nodeType, nextNode
 					}
-				}else{
+				} else {
 					remainPath = remainPath[1:]
 					return "", nil, remainPath, nodeType, nextNode
 				}
-			} else if nextNode.node_type == 2{
+			} else if nextNode.node_type == 2 {
 				// PartialMatch + Node type Extention to Leaf
 				nodeType = GetNodeType(nextNode)
 			} else {
 				return "", errors.New("Invalid_Node_Type"), remainPath, nodeType, nextNode
 			}
-			return value, nil , remainPath, nodeType, nextNode
+			return value, nil, remainPath, nodeType, nextNode
 		}
 
 		//PartialMatch from Branch
 		if node.branch_value[searchPath[0]] != "" && len(remainPath) != 0 && node.node_type == 1 {
-		 //Current Node Branch
+			//Current Node Branch
 			nextNode := mpt.db[node.branch_value[searchPath[0]]]
-			// PartialMatch + Node type Branch to Branch 
+			// PartialMatch + Node type Branch to Branch
 			if nextNode.node_type == 1 {
 				nextNode = mpt.db[nextNode.branch_value[remainPath[0]]]
-				if len(remainPath)== 1{
+				if len(remainPath) == 1 {
 					if nextNode.node_type == 1 {
 						value = nextNode.branch_value[16]
 						return value, nil, nil, nodeType, nextNode
-					} else{
+					} else {
 						value = nextNode.flag_value.value
 						return value, nil, nil, nodeType, nextNode
 					}
-				}else{
+				} else {
 					remainPath = remainPath[1:]
 					return "", nil, remainPath, nodeType, nextNode
 				}
-			} else if nextNode.node_type == 2{
+			} else if nextNode.node_type == 2 {
 				// PartialMatch + Node type Branch to Extention
 				// PartialMatch + Node type Branch to Leaf
 				nodeType = GetNodeType(nextNode)
-				if nodeType > 1{
+				if nodeType > 1 {
 					//Leaf
-						value = nextNode.flag_value.value
-						return value, nil, nil, nodeType, nextNode
-						// no need decrement as it is leaf
+					value = nextNode.flag_value.value
+					return value, nil, nil, nodeType, nextNode
+					// no need decrement as it is leaf
 				} else {
 					//Extension
 					nextNode = mpt.db[nextNode.flag_value.value]
@@ -645,9 +648,8 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 		// if no match path
 		return "", errors.New("path_not_found"), remainPath, nodeType, nextNode
 	}
-	return "" , nil, remainPath, nodeType, nextNode
+	return "", nil, remainPath, nodeType, nextNode
 }
-
 
 /*-------------------------DELETE HELPER---------------------------------------------------*/
 /* SubFunction of Get Master Function
@@ -843,7 +845,7 @@ func (mpt *MerklePatriciaTrie) GetNodePath(path []uint8, nodeHash string) ([]Nod
 * To generate the branch index with value
 *@input:childHash string
 *@oututp:i uint8
-*/
+ */
 func (node *Node) GetBranchIndex(childHash string) uint8 {
 
 	for i := uint8(0); i < uint8(16); i++ {
@@ -862,13 +864,13 @@ func (node *Node) GetBranchIndex(childHash string) uint8 {
 * To balance Trie after delete and insertion
 *@input:node []Node, branchToDelete uint8
 *@oututp:None
-*/
+ */
 func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 
 	if len(node) == 0 {
 		return
 	}
- 	//MPT is not balanced... Node is connected in a wrong way
+	//MPT is not balanced... Node is connected in a wrong way
 	lastNode := node[len(node)-1]
 	numBranches := 0
 	remainingChildIndex := NoChild
@@ -905,7 +907,7 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 			if parentNode.IsBranch() {
 				modifiedNodeHash := modifiedNode.hash_node()
 				mpt.db[modifiedNodeHash] = modifiedNode
-				mpt.UpdateHashValues(node[:len(node)-1],parentNode.GetBranchIndex(lastNode.hash_node()),modifiedNodeHash)
+				mpt.UpdateHashValues(node[:len(node)-1], parentNode.GetBranchIndex(lastNode.hash_node()), modifiedNodeHash)
 			} else {
 				// Merge Node
 				parentNodeHash := parentNode.hash_node()
@@ -917,7 +919,7 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 					mpt.root = modifiedNodeHash
 				} else {
 					grandParentNode := node[len(node)-3]
-					mpt.UpdateHashValues(node[:len(node)-2],grandParentNode.GetBranchIndex(parentNodeHash),modifiedNodeHash)
+					mpt.UpdateHashValues(node[:len(node)-2], grandParentNode.GetBranchIndex(parentNodeHash), modifiedNodeHash)
 				}
 			}
 		}
@@ -933,7 +935,7 @@ func (mpt *MerklePatriciaTrie) UpdateTrie(node []Node, branchToDelete uint8) {
 * To Print Root
 *@ input: None
 *@ output: None
-*/
+ */
 func (mpt *MerklePatriciaTrie) GetRootNode() {
 	root := mpt.db[mpt.root]
 	fmt.Println("Nodetype: ", root.node_type)
@@ -946,7 +948,7 @@ func (mpt *MerklePatriciaTrie) GetRootNode() {
 * To Create Extension
 *@ input: path []uint8, value string
 *@ output: Node
-*/
+ */
 func CreateExtension(path []uint8, hash string) Node {
 	return Node{
 		node_type:    2,
@@ -962,7 +964,7 @@ func CreateExtension(path []uint8, hash string) Node {
 * To Create Branch
 *@ input: value string
 *@ output: Node
-*/
+ */
 func CreateBranch(value string) Node {
 	branch_value := [17]string{}
 	branch_value[16] = value
@@ -972,11 +974,12 @@ func CreateBranch(value string) Node {
 		flag_value:   Flag_value{},
 	}
 }
+
 /* CreateLeaf
 * To Create Leaf
 *@ input: path []uint8, value string
 *@ output: Node
-*/
+ */
 func CreateLeaf(path []uint8, value string) Node {
 	return Node{
 		node_type:    2,
@@ -992,7 +995,7 @@ func CreateLeaf(path []uint8, value string) Node {
 * To pass hash value to DB and get the node
 *@ input: hash string
 *@ output: n Node
-*/
+ */
 func (mpt *MerklePatriciaTrie) GetHashNode(hash string) Node {
 	n, _ := mpt.db[hash]
 	return n
@@ -1022,7 +1025,7 @@ func (node *Node) IsLeaf() bool {
 * To check for extention node
 *@input:node *Node
 *@oututp:bool
-*/
+ */
 func (node *Node) IsExtension() bool {
 	return (node.node_type == 2) && (node.flag_value.encoded_prefix[0]>>5 == 0)
 }
@@ -1032,7 +1035,7 @@ func (node *Node) IsExtension() bool {
 * To convert node as hashNode (HashValue)
 *@ input: node *Node
 *@ output: errorMessage string
-*/
+ */
 func (node *Node) hash_node() string {
 	var str string
 	switch node.node_type {
@@ -1062,10 +1065,10 @@ func (node *Node) hash_node() string {
  */
 func (node *Node) MergeExtension(child Node) Node {
 	if child.IsExtension() {
-		return CreateExtension(append(compact_decode(node.flag_value.encoded_prefix),compact_decode(child.flag_value.encoded_prefix)...),child.flag_value.value)
+		return CreateExtension(append(compact_decode(node.flag_value.encoded_prefix), compact_decode(child.flag_value.encoded_prefix)...), child.flag_value.value)
 	}
 	return CreateLeaf(
-		append(compact_decode(node.flag_value.encoded_prefix), compact_decode(child.flag_value.encoded_prefix)...),child.flag_value.value)
+		append(compact_decode(node.flag_value.encoded_prefix), compact_decode(child.flag_value.encoded_prefix)...), child.flag_value.value)
 }
 
 func (mpt *MerklePatriciaTrie) MergeLeafExt(
@@ -1092,7 +1095,7 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 	remainingNodePath := nodePath[len(matchPrefix):]
 	// check for remaining path
 	remainingPath := path[len(matchPrefix):]
-	// Generate newBranch node with ref to other Leaf/Ext 
+	// Generate newBranch node with ref to other Leaf/Ext
 	newBranch := CreateBranch("")
 	if node.IsLeaf() {
 		if len(remainingNodePath) == 0 {
@@ -1104,7 +1107,7 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 			newBranch.branch_value[remainingNodePath[0]] = newLeafHash
 		}
 	} else {
-		// if one path left create new Branch 
+		// if one path left create new Branch
 		if len(remainingNodePath) == 1 {
 			newBranch.branch_value[remainingNodePath[0]] = node.flag_value.value
 		} else {
@@ -1114,7 +1117,7 @@ func (mpt *MerklePatriciaTrie) MergeLeafExt(
 			newBranch.branch_value[remainingNodePath[0]] = newExtensionHash
 		}
 	}
-  // Create new node and add to tree
+	// Create new node and add to tree
 	if len(remainingPath) == 0 {
 		newBranch.branch_value[16] = new_value
 	} else {
@@ -1153,7 +1156,7 @@ func test_compact_encode() {
 /* Test1_2
 *
 * To Test Insert and Get functions
-*/
+ */
 func Test1_2() {
 	fmt.Println("-------------------Test 1-------------------")
 	mpt := InitializeMpt()
@@ -1203,7 +1206,7 @@ func Test1_2() {
 	fmt.Println(reflect.DeepEqual("", value12))
 }
 
-func Test3_4(){
+func Test3_4() {
 	fmt.Println("-------------------Test 3-------------------")
 	mpt := InitializeMpt()
 
@@ -1212,26 +1215,26 @@ func Test3_4(){
 	mpt.Insert("aap", "orange")
 	mpt.Insert("ba", "new")
 	//fmt.Println(mpt.Order_nodes())
-	v1,_ := mpt.Get("q")
-	v2,_ := mpt.Get("aaa")
-	v3,_ := mpt.Get("aap")
-	v4,_ := mpt.Get("ba")
+	v1, _ := mpt.Get("q")
+	v2, _ := mpt.Get("aaa")
+	v3, _ := mpt.Get("aap")
+	v4, _ := mpt.Get("ba")
 
 	fmt.Println(reflect.DeepEqual("apple", v1))
 	fmt.Println(reflect.DeepEqual("apple", v2))
 	fmt.Println(reflect.DeepEqual("orange", v3))
 	fmt.Println(reflect.DeepEqual("new", v4))
 
- 	fmt.Println("-------------------Test 4-------------------")
+	fmt.Println("-------------------Test 4-------------------")
 
 	mpt = InitializeMpt()
 	mpt.Insert("p", "apple")
 	mpt.Insert("aa", "banana")
 	mpt.Insert("ap", "orange")
 	//fmt.Println(mpt.Order_nodes())
-	v1,_ = mpt.Get("p")
-	v2,_ = mpt.Get("aa")
-	v3,_ = mpt.Get("ap")
+	v1, _ = mpt.Get("p")
+	v2, _ = mpt.Get("aa")
+	v3, _ = mpt.Get("ap")
 	fmt.Println(reflect.DeepEqual("apple", v1))
 	fmt.Println(reflect.DeepEqual("banana", v2))
 	fmt.Println(reflect.DeepEqual("orange", v3))
@@ -1270,9 +1273,30 @@ func Test6() {
 	fmt.Println(reflect.DeepEqual("banana", value2))
 }
 
+func Test7() {
+	fmt.Println("-------------------Test 7-------------------")
+	mpt := MerklePatriciaTrie{}
+	mpt.db = make(map[string]Node)
+	mpt.Insert("p", "apple")
+	mpt.Insert("aaaaa", "banana")
+	mpt.Insert("aaaap", "orange")
+	mpt.Insert("aa", "new")
+
+	value1, _ := mpt.Get("p")
+	value2, _ := mpt.Get("aaaaa")
+	value3, _ := mpt.Get("aaaap")
+	value4, _ := mpt.Get("aa")
+
+	//fmt.Println(mpt.Order_nodes())
+	fmt.Println(reflect.DeepEqual("apple", value1))
+	fmt.Println(reflect.DeepEqual("banana", value2))
+	fmt.Println(reflect.DeepEqual("apple", value3))
+	fmt.Println(reflect.DeepEqual("banana", value4))
+}
+
 /* String
 * To support node printing
-*/
+ */
 func (node *Node) String() string {
 	str := "empty string"
 	switch node.node_type {
@@ -1298,14 +1322,14 @@ func (node *Node) String() string {
 
 /* node_to_string
 * To Convert node to string
-*/
+ */
 func node_to_string(node Node) string {
 	return node.String()
 }
 
 /* Initial
 * To Intialize the trie
-*/
+ */
 func (mpt *MerklePatriciaTrie) Initial() {
 	mpt.root = ""
 	mpt.db = make(map[string]Node)
@@ -1313,21 +1337,21 @@ func (mpt *MerklePatriciaTrie) Initial() {
 
 /* is_ext_node
 * To check for extension Node
-*/
+ */
 func is_ext_node(encoded_arr []uint8) bool {
-	return encoded_arr[0] / 16 < 2
+	return encoded_arr[0]/16 < 2
 }
 
 /* TestCompact
 * To test compact_encode
-*/
+ */
 func TestCompact() {
 	test_compact_encode()
 }
 
 /* String
 * To print node content
-*/
+ */
 func (mpt *MerklePatriciaTrie) String() string {
 	content := fmt.Sprintf("ROOT=%s\n", mpt.root)
 	for hash := range mpt.db {
@@ -1338,7 +1362,7 @@ func (mpt *MerklePatriciaTrie) String() string {
 
 /* Order_nodes
 * To order nodes
-*/
+ */
 func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	raw_content := mpt.String()
 	content := strings.Split(raw_content, "\n")
@@ -1353,10 +1377,10 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 		i += 1
 		line := ""
 		for _, each := range content {
-			if strings.HasPrefix(each, "HashStart" + cur_hash + "HashEnd") {
+			if strings.HasPrefix(each, "HashStart"+cur_hash+"HashEnd") {
 				line = strings.Split(each, "HashEnd: ")[1]
 				rs += each + "\n"
-				rs = strings.Replace(rs, "HashStart" + cur_hash + "HashEnd", fmt.Sprintf("Hash%v", i),  -1)
+				rs = strings.Replace(rs, "HashStart"+cur_hash+"HashEnd", fmt.Sprintf("Hash%v", i), -1)
 			}
 		}
 		temp2 := strings.Split(line, "HashStart")
@@ -1372,13 +1396,34 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	return rs
 }
 
+func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
+	if mpt.root == "" {
+		return "", errors.New("path_not_found")
+	}
 
+	if key == "" {
+		// If the root is a branch, return its value.
+		// Otherwise, there's no value at path "".
+		rootNode := mpt.GetHashNode(mpt.root)
+		//rootNode := mpt.GetNodeByHash(mpt.root)
+		if rootNode.IsBranch() {
+			return rootNode.branch_value[16], nil
+		}
+		if rootNode.IsLeaf() && (len(compact_decode(rootNode.flag_value.encoded_prefix)) == 0) {
+			return rootNode.flag_value.value, nil
+		}
+		return "", errors.New("path_not_found")
+	}
 
-
-
-
- 
-
-
-
-
+	nodePath, remainingPath := mpt.GetNodePath(HexConverter(key), mpt.root)
+	if len(remainingPath) > 0 {
+		// Could not find a node with this path.
+		return "", errors.New("path_not_found")
+	}
+	
+	node := nodePath[len(nodePath)-1]
+	if node.IsBranch() {
+		return node.branch_value[16], nil
+	}
+	return node.flag_value.value, nil
+}

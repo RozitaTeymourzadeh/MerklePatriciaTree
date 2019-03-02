@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
 	"golang.org/x/crypto/sha3"
 )
 
@@ -307,7 +306,7 @@ func (mpt *MerklePatriciaTrie) UpdateHashValues(nodeChain []Node, child uint8, n
 *@ input: key string
 *@ output: value string, errorMsg error
  */
-func (mpt *MerklePatriciaTrie) Get2(key string) (string, error) {
+func (mpt *MerklePatriciaTrie) Get1(key string) (string, error) {
 	var DEBUG int
 	DEBUG = 0
 	var value string
@@ -347,6 +346,34 @@ func (mpt *MerklePatriciaTrie) Get2(key string) (string, error) {
 		}
 	}
 	return value, errorMsg
+}
+
+func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
+	if mpt.root == "" {
+		return "", errors.New("path_not_found")
+	}
+
+	if key == "" {
+		rootNode := mpt.GetHashNode(mpt.root)
+		if rootNode.IsBranch() {
+			return rootNode.branch_value[16], nil
+		}
+		if rootNode.IsLeaf() && (len(compact_decode(rootNode.flag_value.encoded_prefix)) == 0) {
+			return rootNode.flag_value.value, nil
+		}
+		return "", errors.New("path_not_found")
+	}
+
+	nodePath, remainingPath := mpt.GetNodePath(HexConverter(key), mpt.root)
+	if len(remainingPath) > 0 {
+		return "", errors.New("path_not_found")
+	}
+	
+	node := nodePath[len(nodePath)-1]
+	if node.IsBranch() {
+		return node.branch_value[16], nil
+	}
+	return node.flag_value.value, nil
 }
 
 /* Insert
@@ -1396,34 +1423,4 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	return rs
 }
 
-func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
-	if mpt.root == "" {
-		return "", errors.New("path_not_found")
-	}
 
-	if key == "" {
-		// If the root is a branch, return its value.
-		// Otherwise, there's no value at path "".
-		rootNode := mpt.GetHashNode(mpt.root)
-		//rootNode := mpt.GetNodeByHash(mpt.root)
-		if rootNode.IsBranch() {
-			return rootNode.branch_value[16], nil
-		}
-		if rootNode.IsLeaf() && (len(compact_decode(rootNode.flag_value.encoded_prefix)) == 0) {
-			return rootNode.flag_value.value, nil
-		}
-		return "", errors.New("path_not_found")
-	}
-
-	nodePath, remainingPath := mpt.GetNodePath(HexConverter(key), mpt.root)
-	if len(remainingPath) > 0 {
-		// Could not find a node with this path.
-		return "", errors.New("path_not_found")
-	}
-	
-	node := nodePath[len(nodePath)-1]
-	if node.IsBranch() {
-		return node.branch_value[16], nil
-	}
-	return node.flag_value.value, nil
-}

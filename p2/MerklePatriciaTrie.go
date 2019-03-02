@@ -1,4 +1,4 @@
-package p1
+package p2
 
 import (
 	//"MerklePatriciaTree/p1"
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
 	"golang.org/x/crypto/sha3"
 )
 
@@ -368,7 +369,7 @@ func (mpt *MerklePatriciaTrie) Get(key string) (string, error) {
 	if len(remainingPath) > 0 {
 		return "", errors.New("path_not_found")
 	}
-	
+
 	node := nodePath[len(nodePath)-1]
 	if node.IsBranch() {
 		return node.branch_value[16], nil
@@ -1422,5 +1423,3 @@ func (mpt *MerklePatriciaTrie) Order_nodes() string {
 	}
 	return rs
 }
-
-

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
 	"golang.org/x/crypto/sha3"
 )
 

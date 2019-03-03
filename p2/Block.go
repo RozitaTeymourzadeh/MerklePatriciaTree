@@ -19,11 +19,11 @@ import (
 *
  */
 type BlockHeader struct {
-	Height int32  
-	Timestamp int64  
-	Hash string 
-	ParentHash string 
-	Size int32  
+	Size       int32
+	ParentHash string
+	Height     int32
+	Timestamp  int64
+	Hash       string
 }
 
 /* Block struct
@@ -31,7 +31,7 @@ type BlockHeader struct {
 * Block struct
  */
 type Block struct {
-	Header BlockHeader 
+	Header BlockHeader
 	Value  MerklePatriciaTrie
 }
 
@@ -93,6 +93,25 @@ func (block *Block) Insert(key string, value string) {
 	block.UpdateMpt()
 }
 
+/* MarshalJSON
+*
+* To hash MPT with the SHA3-256 encoded value of this string and update MPT value upon the
+* insertion
+* @input:  block
+* @output: updated block
+*
+ */
+func (block *Block) MarshalJSON() ([]byte, error) {
+	return json.Marshal(SymmetricJsonBlock{
+		Size:       block.Header.Size,
+		ParentHash: block.Header.ParentHash,
+		Height:     block.Header.Height,
+		Timestamp:  block.Header.Timestamp,
+		Hash:       block.Header.Hash,
+		MerklePT:   block.Value.LeafList(),
+	})
+}
+
 /* UpdateMpt
 *
 * To hash MPT with the SHA3-256 encoded value of this string and update MPT value upon the
@@ -100,7 +119,7 @@ func (block *Block) Insert(key string, value string) {
 * @input:  block
 * @output: updated block
 *
-*/
+ */
 func (block *Block) UpdateMpt() {
 	block.Header.Size = int32(len([]byte(fmt.Sprintf("%v", block.Value))))
 	hashConverter := sha3.New256()
@@ -112,12 +131,12 @@ func (block *Block) UpdateMpt() {
 *
 * Symmetric Json struct for Block struct
 *
-*/
+ */
 type SymmetricJsonBlock struct {
-	Size int32  `json:"size"`
-	ParentHash string `json:"parentHash"`
-	Height int32 `json:"height"`
-	Timestamp int64 `json:"timeStamp"`
-	Hash string `json:"hash"`
-	MerklePT map[string]string `json:"mpt"`
+	Size       int32             `json:"size"`
+	ParentHash string            `json:"parentHash"`
+	Height     int32             `json:"height"`
+	Timestamp  int64             `json:"timeStamp"`
+	Hash       string            `json:"hash"`
+	MerklePT   map[string]string `json:"MerklePT"`
 }

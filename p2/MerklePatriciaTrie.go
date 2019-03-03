@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
 	"golang.org/x/crypto/sha3"
 )
 
@@ -1374,6 +1373,8 @@ func Test7() {
 	fmt.Println(reflect.DeepEqual("apple", value3))
 	fmt.Println(reflect.DeepEqual("banana", value4))
 }
+
+
 
 /* String
 * To support node printing

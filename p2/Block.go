@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
 	"golang.org/x/crypto/sha3"
 )
 
@@ -57,7 +58,7 @@ func (block *Block) Initial(value MerklePatriciaTrie, height int32, parentHash s
 /*-------------------------JSON HELPER---------------------------------------------------*/
 
 /* UnmarshalJSON
-* Interitted from golang library 
+* Interitted from golang library
 * To encodes a block instance into a JSON format string
 * @input: an instanse of block
 * @output: a string of JSON format
@@ -83,26 +84,26 @@ func (block *Block) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-/* EncodeToJson
-* Interitted from golang library 
+/* EncodeToJSON
+* Interitted from golang library
 * To encodes a block instance into a JSON format string
 * @input: an instanse of block
 * @output: a string of JSON format
 *
  */
-func (block *Block) EncodeToJson() (string, error) {
+func (block *Block) EncodeToJSON() (string, error) {
 	jsonBytes, err := json.Marshal(block)
 	return string(jsonBytes), err
 }
 
-/* DecodeFromJson
+/* DecodeFromJSON
 *
 * To take a string that represents the JSON value of a block as an input, and decodes the input string back to a block instance.
 * @input:  a string of JSON format
 * @output: an instanse of block
 *
  */
-func (block *Block) DecodeFromJson(jsonString string) error {
+func (block *Block) DecodeFromJSON(jsonString string) error {
 	return json.Unmarshal([]byte(jsonString), block)
 }
 

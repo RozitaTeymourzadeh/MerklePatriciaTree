@@ -69,9 +69,36 @@ func (blockChain *BlockChain) Insert(block Block) {
 /*-------------------------JSON HELPER---------------------------------------------------*/
 /* Serialize and decerialization
 /*-------------------------JSON HELPER---------------------------------------------------*/
+
+/* EncodeToJSON
+* 
+* To encode block into Json block
+* @input: jsonString string
+* @output: string, error
+*
+ */
+func (blockChain *BlockChain) EncodeToJSON() (string, error) {
+	jsonBytes, err := json.Marshal(blockChain)
+	return string(jsonBytes), err
+}
+
+/* DecodeFromJSON
+* 
+* To decerialize JSON to blockChain
+* @input: jsonString string
+* @output: blockChain
+*
+ */
+// Deserializes the given JSON to a block chain instance.
+func (blockChain *BlockChain) DecodeFromJSON(jsonString string) error {
+	return json.Unmarshal([]byte(jsonString), blockChain)
+}
+
 /* UnmarshalJSON
 * Interitted from golang library
 * To decerialize blockChain as Json type
+* @input: data []byte
+* @output: nill
 *
  */
 func (blockChain *BlockChain) UnmarshalJSON(data []byte) error {
@@ -82,9 +109,9 @@ func (blockChain *BlockChain) UnmarshalJSON(data []byte) error {
 	}
 	blockChain.Initial()
 	for _, block := range blocks {
-		blockChain.Insert(block) // TODO
+		blockChain.Insert(block) // update blockChain by insertion
 	}
-	return nil //return nil if no block
+	return nil 
 }
 
 /* MarshalJSON

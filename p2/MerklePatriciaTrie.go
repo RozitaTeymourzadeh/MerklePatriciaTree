@@ -692,6 +692,33 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 	return "", nil, remainPath, nodeType, nextNode
 }
 
+/* GetLeafList
+* To move down to the MPT and get Leaf list
+* @input: node Node, path []uint8, leafvalueList map[string]string
+* @output: nill
+ */
+ func (mpt *MerklePatriciaTrie) GetLeafList(node Node, path []uint8, leafvalueList map[string]string) {
+	if node.IsBranch() {
+		if node.branch_value[16] != "" {
+			leafvalueList[HexArrayToStr(path)] = node.branch_value[16]
+		}
+		for i := uint8(0); i < uint8(16); i++ {
+			if node.branch_value[i] != "" {
+				mpt.GetLeafList(mpt.GetHashNode(node.branch_value[i]),
+					append(path, i),
+					leafvalueList)
+			}
+		}
+	} else if node.IsExtension() {
+		mpt.GetLeafList(mpt.GetHashNode(node.flag_value.value),
+			append(path, compact_decode(node.flag_value.encoded_prefix)...),
+			leafvalueList)
+	} else {
+		finalPath := append(path, compact_decode(node.flag_value.encoded_prefix)...)
+		leafvalueList[HexArrayToStr(finalPath)] = node.flag_value.value
+	}
+}
+
 /*-------------------------DELETE HELPER---------------------------------------------------*/
 /* SubFunction of Get Master Function
 /*-------------------------DELETE HELPER---------------------------------------------------*/

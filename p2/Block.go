@@ -65,19 +65,19 @@ func (block *Block) Initial(height int32, parentHash string, value MerklePatrici
 *
  */
 func (block *Block) UnmarshalJSON(data []byte) error {
-	JsonBlock := SymmetricJsonBlock{}
-	err := json.Unmarshal(data, &JsonBlock)
+	SymmetricBlockJson := BlockJson{}
+	err := json.Unmarshal(data, &SymmetricBlockJson)
 	if err != nil {
 		return err
 	}
-	block.Header.Height = JsonBlock.Height
-	block.Header.Timestamp = JsonBlock.Timestamp
-	block.Header.Hash = JsonBlock.Hash
-	block.Header.ParentHash = JsonBlock.ParentHash
-	block.Header.Size = JsonBlock.Size
+	block.Header.Height = SymmetricBlockJson.Height
+	block.Header.Timestamp = SymmetricBlockJson.Timestamp
+	block.Header.Hash = SymmetricBlockJson.Hash
+	block.Header.ParentHash = SymmetricBlockJson.ParentHash
+	block.Header.Size = SymmetricBlockJson.Size
 	mpt := MerklePatriciaTrie{}
 	mpt.Initial()
-	for k, v := range JsonBlock.Mpt {
+	for k, v := range SymmetricBlockJson.MPT {
 		mpt.Insert(k, v)
 	}
 	block.Value = mpt
@@ -116,28 +116,28 @@ func (block *Block) DecodeFromJSON(jsonString string) error {
 *
  */
 func (block *Block) MarshalJSON() ([]byte, error) {
-	return json.Marshal(SymmetricJsonBlock{
+	return json.Marshal(BlockJson{
 		Size:       block.Header.Size,
 		ParentHash: block.Header.ParentHash,
 		Height:     block.Header.Height,
 		Timestamp:  block.Header.Timestamp,
 		Hash:       block.Header.Hash,
-		Mpt:        block.Value.LeafList(),
+		MPT:        block.Value.LeafList(),
 	})
 }
 
-/* SymmetricJsonBlock
+/* BlockJson
 *
-* Symmetric Json struct for Block struct
+* BlockJson struct for Block struct
 *
  */
-type SymmetricJsonBlock struct {
-	Size       int32             `json:"size"`
-	ParentHash string            `json:"parentHash"`
+type BlockJson struct {
 	Height     int32             `json:"height"`
 	Timestamp  int64             `json:"timeStamp"`
 	Hash       string            `json:"hash"`
-	Mpt        map[string]string `json:"mpt"`
+	ParentHash string            `json:"parentHash"`
+	Size       int32             `json:"size"`
+	MPT        map[string]string `json:"mpt"`
 }
 
 /*-------------------------MASTER---------------------------------------------------*/

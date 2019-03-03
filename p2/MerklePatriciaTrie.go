@@ -18,14 +18,14 @@ import (
 type stack []Node
 
 type Flag_value struct {
-	encoded_prefix []uint8
-	value          string
+	encoded_prefix []uint8 `json:"encoded_prefix"`
+	value          string  `json:"value"`
 }
 
 type Node struct {
-	node_type    int // 0: Null, 1: Branch, 2: Ext or Leaf
-	branch_value [17]string
-	flag_value   Flag_value
+	node_type    int        `json:"node_type"` // 0: Null, 1: Branch, 2: Ext or Leaf
+	branch_value [17]string `json:"branch_value"`
+	flag_value   Flag_value `json:"flag_value"`
 }
 
 type MerklePatriciaTrie struct {

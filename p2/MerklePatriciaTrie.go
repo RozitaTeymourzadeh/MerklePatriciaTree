@@ -1,7 +1,6 @@
 package p2
 
 import (
-	//"MerklePatriciaTree/p1"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -29,8 +28,8 @@ type Node struct {
 }
 
 type MerklePatriciaTrie struct {
-	db   map[string]Node
-	root string
+	db   map[string]Node `json:"db"`
+	root string          `json:"root"`
 }
 
 const NoChild = uint8(60)

@@ -29,8 +29,11 @@ func (blockChain *BlockChain) Initial() {
 	blockChain.Length = 0
 }
 
+/*-------------------------JSON HELPER---------------------------------------------------*/
+/* Serialize and decerialization
+/*-------------------------JSON HELPER---------------------------------------------------*/
 /* UnmarshalJSON
-*
+* Interitted from golang library
 * To decerialize blockChain as Json type
 *
  */
@@ -40,11 +43,22 @@ func (blockChain *BlockChain) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-
 	blockChain.Initial()
 	for _, block := range blocks {
-		blockChain.Insert(block)// TODO
+		blockChain.Insert(block) // TODO
 	}
+	return nil //return nil if no block
+}
 
-	return nil
+/* MarshalJSON
+* Interitted from golang library
+* To serialize  blockChain as Json type
+*
+ */
+func (blockChain *BlockChain) MarshalJSON() ([]byte, error) {
+	blocks := make([]Block, 0)
+	for _, v := range blockChain.Chain {
+		blocks = append(blocks, v...)
+	}
+	return json.Marshal(blocks)
 }

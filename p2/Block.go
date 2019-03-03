@@ -31,7 +31,11 @@ type Block struct {
 	Value  MerklePatriciaTrie `json:"value"`
 }
 
-/* DataInitialization
+/*-------------------------INITIALIZATION---------------------------------------------------*/
+/* Data initialization
+/*-------------------------INITIALIZATION---------------------------------------------------*/
+
+/* Initial
 *
 * To initialize MPT height and parentHash
 * @input: value MerklePatriciaTrie, height int32, parentHash string
@@ -44,6 +48,10 @@ func (block *Block) Initial(value MerklePatriciaTrie, height int32, parentHash s
 	block.Header.ParentHash = parentHash
 	block.Value = value
 }
+
+/*-------------------------JSON HELPER---------------------------------------------------*/
+/* Data initialization
+/*-------------------------JSON HELPER---------------------------------------------------*/
 
 /* EncodeToJson
 *
@@ -66,4 +74,18 @@ func (block *Block) EncodeToJson() (string, error) {
  */
 func (block *Block) DecodeFromJson(jsonString string) error {
 	return json.Unmarshal([]byte(jsonString), block)
+}
+
+/* Insert
+*
+* To insert key/value pair into the main MPT as block and
+* update the mpt size and hash value. take a string that represents the JSON value of a block as
+* @input:  key string, value string
+* @output: update block
+*
+ */
+// Inserts a key-value pair into the MPT, and recomputes the size and hash of this block.
+func (block *Block) Insert(key string, value string) {
+	block.Value.Insert(key, value)
+	block.updateMpt() // TODO
 }

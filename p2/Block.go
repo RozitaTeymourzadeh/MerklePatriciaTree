@@ -19,11 +19,11 @@ import (
 *
  */
 type BlockHeader struct {
-	Height     int32  `json:"height"`
-	Timestamp  int64  `json:"timestamp"`
-	Hash       string `json:"hash"`
-	ParentHash string `json:"parentHash"`
-	Size       int32  `json:"size"`
+	Height int32  
+	Timestamp int64  
+	Hash string 
+	ParentHash string 
+	Size int32  
 }
 
 /* Block struct
@@ -31,8 +31,8 @@ type BlockHeader struct {
 * Block struct
  */
 type Block struct {
-	Header BlockHeader        `json:"header"`
-	Value  MerklePatriciaTrie `json:"value"`
+	Header BlockHeader 
+	Value  MerklePatriciaTrie
 }
 
 /*-------------------------INITIALIZATION---------------------------------------------------*/
@@ -100,10 +100,24 @@ func (block *Block) Insert(key string, value string) {
 * @input:  block
 * @output: updated block
 *
- */
+*/
 func (block *Block) UpdateMpt() {
 	block.Header.Size = int32(len([]byte(fmt.Sprintf("%v", block.Value))))
 	hashConverter := sha3.New256()
 	hashStr := string(block.Header.Height) + string(block.Header.Timestamp) + block.Header.ParentHash + block.Value.root + string(block.Header.Size)
 	block.Header.Hash = hex.EncodeToString(hashConverter.Sum([]byte(hashStr)))
+}
+
+/* SymmetricJsonBlock
+*
+* Symmetric Json struct for Block struct
+*
+*/
+type SymmetricJsonBlock struct {
+	Size int32  `json:"size"`
+	ParentHash string `json:"parentHash"`
+	Height int32 `json:"height"`
+	Timestamp int64 `json:"timeStamp"`
+	Hash string `json:"hash"`
+	MerklePT map[string]string `json:"mpt"`
 }

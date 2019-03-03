@@ -108,7 +108,7 @@ func (block *Block) MarshalJSON() ([]byte, error) {
 		Height:     block.Header.Height,
 		Timestamp:  block.Header.Timestamp,
 		Hash:       block.Header.Hash,
-		MerklePT:   block.Value.LeafList(),
+		Mpt:        block.Value.LeafList(),
 	})
 }
 
@@ -138,5 +138,5 @@ type SymmetricJsonBlock struct {
 	Height     int32             `json:"height"`
 	Timestamp  int64             `json:"timeStamp"`
 	Hash       string            `json:"hash"`
-	MerklePT   map[string]string `json:"MerklePT"`
+	Mpt        map[string]string `json:"mpt"`
 }

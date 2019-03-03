@@ -37,15 +37,34 @@ func (blockChain *BlockChain) Initial() {
 /* Get
 *
 * To return blocks in chain with certain height
-*
+* @input: height int32
+* @output: blockChain.Chain[height]
  */
 func (blockChain *BlockChain) Get(height int32) []Block {
 	return blockChain.Chain[height]
 }
 
-
-
-
+/* Insert
+*
+* To insert block into blockchain
+*
+ */
+func (blockChain *BlockChain) Insert(block Block) {
+	if block.Header.Height > blockChain.Length {
+		blockChain.Length = block.Header.Height
+	}
+	heightBlocks := blockChain.Chain[block.Header.Height]
+	if heightBlocks == nil { // return empty block if heght is zero
+		heightBlocks = []Block{}
+	}
+	for _, heightBlock := range heightBlocks { // find simmilar hash in blockchain
+		if heightBlock.Header.Hash == block.Header.Hash {
+			return
+		}
+	}
+	// append to blockChain
+	blockChain.Chain[block.Header.Height] = append(heightBlocks, block)
+}
 
 /*-------------------------JSON HELPER---------------------------------------------------*/
 /* Serialize and decerialization
@@ -80,5 +99,3 @@ func (blockChain *BlockChain) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(blocks)
 }
-
-

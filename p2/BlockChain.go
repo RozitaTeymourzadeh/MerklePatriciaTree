@@ -19,6 +19,7 @@ type BlockChain struct {
 /*-------------------------INITIALIZATION---------------------------------------------------*/
 /* Initialize blockChain
 /*-------------------------INITIALIZATION---------------------------------------------------*/
+
 /* Initial
 *
 * To Initialize blockChain
@@ -28,6 +29,23 @@ func (blockChain *BlockChain) Initial() {
 	blockChain.Chain = make(map[int32][]Block)
 	blockChain.Length = 0
 }
+
+/*-------------------------MASTER---------------------------------------------------*/
+/* Main function
+/*-------------------------MASTER---------------------------------------------------*/
+
+/* Get
+*
+* To return blocks in chain with certain height
+*
+ */
+func (blockChain *BlockChain) Get(height int32) []Block {
+	return blockChain.Chain[height]
+}
+
+
+
+
 
 /*-------------------------JSON HELPER---------------------------------------------------*/
 /* Serialize and decerialization
@@ -62,3 +80,5 @@ func (blockChain *BlockChain) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(blocks)
 }
+
+

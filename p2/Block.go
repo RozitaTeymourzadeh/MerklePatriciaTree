@@ -1,8 +1,12 @@
 package p2
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"time"
+
+	"golang.org/x/crypto/sha3"
 )
 
 /*-------------------------STRUCT---------------------------------------------------*/
@@ -84,8 +88,22 @@ func (block *Block) DecodeFromJson(jsonString string) error {
 * @output: update block
 *
  */
-// Inserts a key-value pair into the MPT, and recomputes the size and hash of this block.
 func (block *Block) Insert(key string, value string) {
 	block.Value.Insert(key, value)
-	block.updateMpt() // TODO
+	block.UpdateMpt()
+}
+
+/* UpdateMpt
+*
+* To hash MPT with the SHA3-256 encoded value of this string and update MPT value upon the
+* insertion
+* @input:  block
+* @output: updated block
+*
+ */
+func (block *Block) UpdateMpt() {
+	block.Header.Size = int32(len([]byte(fmt.Sprintf("%v", block.Value))))
+	hashConverter := sha3.New256()
+	hashStr := string(block.Header.Height) + string(block.Header.Timestamp) + block.Header.ParentHash + block.Value.root + string(block.Header.Size)
+	block.Header.Hash = hex.EncodeToString(hashConverter.Sum([]byte(hashStr)))
 }

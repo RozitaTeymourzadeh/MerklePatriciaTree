@@ -511,6 +511,20 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 /* SubFunction of Get Master Function
 /*-------------------------GET HELPER---------------------------------------------------*/
 
+/* LeafList
+* To return the Leaf list
+* @input: map[string]string
+* @output: map[string]string
+ */
+func (mpt *MerklePatriciaTrie) LeafList() map[string]string {
+	leafvalueList := make(map[string]string)
+	if mpt.root != "" {
+		mpt.GetLeafList(mpt.GetHashNode(mpt.root), make([]uint8, 0),
+			leafvalueList)
+	}
+	return leafvalueList
+}
+
 /* FindLeafValue
 * To find value in Leaf node
 * The pointer is in leaf node when we are here
@@ -697,7 +711,7 @@ func (mpt *MerklePatriciaTrie) FindLeafNode(node Node, searchPath []uint8) (stri
 * @input: node Node, path []uint8, leafvalueList map[string]string
 * @output: nill
  */
- func (mpt *MerklePatriciaTrie) GetLeafList(node Node, path []uint8, leafvalueList map[string]string) {
+func (mpt *MerklePatriciaTrie) GetLeafList(node Node, path []uint8, leafvalueList map[string]string) {
 	if node.IsBranch() {
 		if node.branch_value[16] != "" {
 			leafvalueList[HexArrayToStr(path)] = node.branch_value[16]

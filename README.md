@@ -9,10 +9,10 @@ Data structures:
 
 Each block must contain a header, and in the header there are the following fields: 
 
-#### (1) Height: int32
-#### (2) Timestamp: int64
+(1) Height: int32
+(2) Timestamp: int64
 The value must be in the UNIX timestamp format such as 1550013938
-#### (3) Hash: string.
+(3) Hash: string.
 
 Block’s hash is the SHA3-256 encoded value of this string(note that you have to follow this specific order): 
 
@@ -20,8 +20,8 @@ Block’s hash is the SHA3-256 encoded value of this string(note that you have t
 hash_str := string(b.Header.Height) + string(b.Header.Timestamp) + b.Header.ParentHash + b.Value.Root + string(b.Header.Size)
 ```
 
-#### (4) ParentHash: string
-#### (5) Size: int32
+(4) ParentHash: string
+(5) Size: int32
 The size is the length of the byte array of the block value
 
 Each block must have a value, which is a Merkle Patricia Trie. All the data are inserted in the MPT and then a block contains that MPT as the value. So the field definition is this: 
@@ -118,8 +118,6 @@ Example of a blockchain's JSON:
 #### 4. DecodeFromJSON(self, jsonString)
 Description: This function is called upon a blockchain instance. It takes a blockchain JSON string as input, decodes the JSON string back to a list of block JSON strings, decodes each block JSON string back to a block instance, and inserts every block into the blockchain. 
 Argument: self, string
-
-# Build a Merkle Patricia Tree
 
 ## Project 1: Build a Merkle Patricia Tree
 

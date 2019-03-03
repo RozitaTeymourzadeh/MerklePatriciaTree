@@ -46,7 +46,7 @@ type Block struct {
 * @output: nill
 *
  */
-func (block *Block) Initial(value MerklePatriciaTrie, height int32, parentHash string) {
+func (block *Block) Initial(height int32, parentHash string, value MerklePatriciaTrie) {
 	block.Header.Height = height
 	block.Header.Timestamp = time.Now().Unix()
 	block.Header.ParentHash = parentHash

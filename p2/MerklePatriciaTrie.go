@@ -151,6 +151,19 @@ func HexConverter(key string) []uint8 {
 	return hex_array
 }
 
+/* HexArrayToStr
+* To convert Hex array into string data structure
+*@ input: hexArray []uint8
+*@ output: string(stringBytes)
+ */
+func HexArrayToStr(hexArray []uint8) string {
+	stringBytes := make([]byte, len(hexArray)/2)
+	for i := 0; i < len(stringBytes); i++ {
+		stringBytes[i] = hexArray[2*i]<<4 + hexArray[2*i+1]
+	}
+	return string(stringBytes)
+}
+
 /* InitializeMpt
 * To initialize mpt
 *@ input: None

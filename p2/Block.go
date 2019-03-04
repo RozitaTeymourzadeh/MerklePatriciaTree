@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
 	"golang.org/x/crypto/sha3"
 )
 
@@ -49,7 +50,11 @@ func (block *Block) Initial(height int32, parentHash string, value MerklePatrici
 	block.Header.Height = height
 	block.Header.Timestamp = time.Now().Unix()
 	block.Header.ParentHash = parentHash
+	block.Header.Size = int32(len([]byte(fmt.Sprintf("%v", value))))
 	block.Value = value
+	hashConverter := sha3.New256()
+	hashStr := string(block.Header.Height) + string(block.Header.Timestamp) + block.Header.ParentHash + block.Value.root + string(block.Header.Size)
+	block.Header.Hash = hex.EncodeToString(hashConverter.Sum([]byte(hashStr)))
 }
 
 /*-------------------------JSON HELPER---------------------------------------------------*/
@@ -63,9 +68,9 @@ func (block *Block) Initial(height int32, parentHash string, value MerklePatrici
 * @output: a string of JSON format
 *
  */
-func (block *Block) UnmarshalJSON(data []byte) error {
+func (block *Block) UnmarshalJSON(input []byte) error {
 	SymmetricBlockJson := BlockJson{}
-	err := json.Unmarshal(data, &SymmetricBlockJson)
+	err := json.Unmarshal(input, &SymmetricBlockJson)
 	if err != nil {
 		return err
 	}
@@ -137,36 +142,4 @@ type BlockJson struct {
 	ParentHash string            `json:"parentHash"`
 	Size       int32             `json:"size"`
 	MPT        map[string]string `json:"mpt"`
-}
-
-/*-------------------------MASTER---------------------------------------------------*/
-/* Function to modify Block
-/*-------------------------MASTER---------------------------------------------------*/
-
-/* Insert
-*
-* To insert key/value pair into the main MPT as block and
-* update the mpt size and hash value. take a string that represents the JSON value of a block as
-* @input:  key string, value string
-* @output: update block
-*
- */
-func (block *Block) Insert(key string, value string) {
-	block.Value.Insert(key, value)
-	block.UpdateMpt()
-}
-
-/* UpdateMpt
-*
-* To hash MPT with the SHA3-256 encoded value of this string and update MPT value upon the
-* insertion
-* @input:  block
-* @output: updated block
-*
- */
-func (block *Block) UpdateMpt() {
-	block.Header.Size = int32(len([]byte(fmt.Sprintf("%v", block.Value))))
-	hashConverter := sha3.New256()
-	hashStr := string(block.Header.Height) + string(block.Header.Timestamp) + block.Header.ParentHash + block.Value.root + string(block.Header.Size)
-	block.Header.Hash = hex.EncodeToString(hashConverter.Sum([]byte(hashStr)))
 }

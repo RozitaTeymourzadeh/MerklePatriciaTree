@@ -16,14 +16,12 @@ func main() {
 	// p1.Test5()
 	// p1.Test6()
 
-
-
-mpt := p2.MerklePatriciaTrie{}
-mpt.Initial()
-block := p2.Block{}
-blockChain := p2.BlockChain{}
-blockChain.Initial()
-fmt.Printf("mpt:", mpt)
-fmt.Printf("block:", block)
-fmt.Printf("blockChain:", blockChain)
+	mpt := p2.MerklePatriciaTrie{}
+	mpt.Initial()
+	block := p2.Block{}
+	blockChain := p2.BlockChain{}
+	blockChain.Initial()
+	fmt.Printf("mpt:", mpt)
+	fmt.Printf("block:", block)
+	fmt.Printf("blockChain:", blockChain)
 }
